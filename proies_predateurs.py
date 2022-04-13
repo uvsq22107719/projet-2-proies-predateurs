@@ -39,11 +39,22 @@ def creer_grille(mat):
     """Crée des rectangles à partir de la matrice générée"""
     for ligne in range(len(mat)): # Chaque ligne de la matrice
         for chiffre in range(len(mat[ligne])): # Chaque chiffre des lignes de la matrice
-            # Taille des rectangles = LARGEUR/taille
-            # activeoutline = "red" : bordure rouge si le rectangle est visé avec la souris
-            canvas.create_rectangle((chiffre * (LARGEUR/taille), ligne * (LARGEUR/taille)),((chiffre + 1) * (LARGEUR/taille), (ligne + 1) * (LARGEUR/taille)), activeoutline = "red", fill = "#FFFFFF") # blanc
+            if mat[ligne][chiffre] == 0: # Si le chiffre est 0, couleur blanche
+                # Taille des rectangles = LARGEUR/taille
+                canvas.create_rectangle((chiffre * (LARGEUR/taille), ligne * (LARGEUR/taille)),((chiffre + 1) * (LARGEUR/taille), (ligne + 1) * (LARGEUR/taille)), fill = "#FFFFFF") # blanc
+            elif mat[ligne][chiffre] == 1: # Si le chiffre est 1, autre couleur
+                canvas.create_rectangle((chiffre * (LARGEUR/taille), ligne * (LARGEUR/taille)),((chiffre + 1) * (LARGEUR/taille), (ligne + 1) * (LARGEUR/taille)), fill = "#FFFBC8") # Couleurs : code hexadécimal
 
-
+def ajout_lapin():
+    """"""
+    global mat
+    for ligne in range(len(mat)): # Chaque ligne de la matrice
+        for chiffre in range(len(mat[ligne])): # Chaque chiffre des lignes de la matrice
+            if mat[ligne][chiffre] == 0:
+                mat[ligne][chiffre] =+ 1
+    creer_grille(mat)
+    print(mat)
+    return(mat)
 
 ### Programme principal
 
@@ -52,6 +63,7 @@ racine = tk.Tk()
 racine.title("Simulation proies-prédateurs")
 canvas = tk.Canvas(racine, width = LARGEUR, height = HAUTEUR)
 config_courante() # Création de la grille de départ
+ajout_lapin()
 #bouton1 = tk.Button(racine, text = "", command = )
 
 # Placement des widgets
