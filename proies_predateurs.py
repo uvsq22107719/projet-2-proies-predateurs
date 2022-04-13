@@ -13,48 +13,70 @@ import tkinter as tk
 import random
 
 ### Définitions des constantes
-
-HAUTEUR = 1000 # Hauteur du canevas
-LARGEUR = 1000 # Largeur du canevas
+N = 30 # Taille de la matrice
+HAUTEUR = 450 # Hauteur du canevas
+LARGEUR = 450 # Largeur du canevas
+LARGEUR_CASE = LARGEUR // N 
+HAUTEUR_CASE = HAUTEUR // N
 
 ### Définitions des variables globales
+ 
 
-taille = 30 # Taille de la matrice
-print("Taille de la matrice :", taille)
 
 ### Définitions des fonctions
 
 # Configuration courante
-def config_courante():
-    """Crée la matrice de départ, sans sable"""
-    mat = []
-    for i in range(taille):
-        l = [0 for i in range(taille)]
-        mat.append(l)
-    creer_grille(mat)
-    return(mat)
+
+
+
+def choix_couleur(n):
+    """Retourne une couleur à partir de l'entier n"""
+    liste_col = ["white", "yellow", "green", "blue"]
+    if n < 4:
+        return liste_col[n]
+    else:
+        return "grey" + str(min(n + 20, 100))
+
 
 # Création de la grille
-def creer_grille(mat):
-    """Crée des rectangles à partir de la matrice générée"""
-    for ligne in range(len(mat)): # Chaque ligne de la matrice
-        for chiffre in range(len(mat[ligne])): # Chaque chiffre des lignes de la matrice
-            if mat[ligne][chiffre] == 0: # Si le chiffre est 0, couleur blanche
-                # Taille des rectangles = LARGEUR/taille
-                canvas.create_rectangle((chiffre * (LARGEUR/taille), ligne * (LARGEUR/taille)),((chiffre + 1) * (LARGEUR/taille), (ligne + 1) * (LARGEUR/taille)), fill = "#FFFFFF") # blanc
-            elif mat[ligne][chiffre] == 1: # Si le chiffre est 1, autre couleur
-                canvas.create_rectangle((chiffre * (LARGEUR/taille), ligne * (LARGEUR/taille)),((chiffre + 1) * (LARGEUR/taille), (ligne + 1) * (LARGEUR/taille)), fill = "#FFFBC8") # Couleurs : code hexadécimal
+def init_grille():
+    """Retourne une grille carrée vide
+       dimension N+2, les éléments de la configuration vont de 1 à N
+       les indices 0 et N+1 sont les bords et permettent de ne pas gérer
+       de cas particuliers
+    """
+    global grille, config_cur
+    grille = [[0 for i in range(N+2)] for j in range(N+2)]
+    config_cur = [[0 for i in range(N+2)] for j in range(N+2)]
+    for i in range(1, N+1):
+        x = (i - 1) * LARGEUR_CASE
+        for j in range(1, N+1):
+            y = (j - 1) * HAUTEUR_CASE
+            col = "white"
+            carre = canvas.create_rectangle(x, y, x+LARGEUR_CASE,
+                                            y+HAUTEUR_CASE, fill=col,
+                                            outline="grey")
+            grille[i][j] = carre
 
-def ajout_lapin():
-    """"""
-    global mat
-    for ligne in range(len(mat)): # Chaque ligne de la matrice
-        for chiffre in range(len(mat[ligne])): # Chaque chiffre des lignes de la matrice
-            if mat[ligne][chiffre] == 0:
-                mat[ligne][chiffre] =+ 1
-    creer_grille(mat)
-    print(mat)
-    return(mat)
+
+def affiche_grille(config):
+    """Affiche la configuration donnée"""
+    for i in range(1, N+1):
+        for j in range(1, N+1):
+            col = choix_couleur(config[i][j])
+            canvas.itemconfigure(grille[i][j], fill=col)
+
+
+def ajout_proie(config, i, j):
+    
+    config[i][j]+=1
+    affiche_grille(config)
+    print(config)
+    return config
+    
+
+
+
 
 ### Programme principal
 
@@ -62,8 +84,8 @@ def ajout_lapin():
 racine = tk.Tk()
 racine.title("Simulation proies-prédateurs")
 canvas = tk.Canvas(racine, width = LARGEUR, height = HAUTEUR)
-config_courante() # Création de la grille de départ
-ajout_lapin()
+init_grille() # Création de la grille de départ
+ajout_proie(config_cur,5,5)
 #bouton1 = tk.Button(racine, text = "", command = )
 
 # Placement des widgets
@@ -72,3 +94,12 @@ canvas.grid(column = 1, row = 0, rowspan = 3)
 
 # Boucle principale
 racine.mainloop()
+
+
+
+
+
+
+
+
+###################################################################################################################################
