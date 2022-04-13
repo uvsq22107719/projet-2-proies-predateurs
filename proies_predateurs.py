@@ -10,9 +10,10 @@
 ### Import des librairies
 
 import tkinter as tk
-import random
+import random as rd
 
 ### Définitions des constantes
+
 N = 30 # Taille de la matrice
 HAUTEUR = 450 # Hauteur du canevas
 LARGEUR = 450 # Largeur du canevas
@@ -25,13 +26,10 @@ HAUTEUR_CASE = HAUTEUR // N
 
 ### Définitions des fonctions
 
-# Configuration courante
-
-
-
+# Choix des couleurs
 def choix_couleur(n):
     """Retourne une couleur à partir de l'entier n"""
-    liste_col = ["white", "yellow", "green", "blue"]
+    liste_col = ["white", "yellow", "red", "blue"]
     if n < 4:
         return liste_col[n]
     else:
@@ -59,6 +57,7 @@ def init_grille():
             grille[i][j] = carre
 
 
+# Affichage de la grille
 def affiche_grille(config):
     """Affiche la configuration donnée"""
     for i in range(1, N+1):
@@ -67,15 +66,12 @@ def affiche_grille(config):
             canvas.itemconfigure(grille[i][j], fill=col)
 
 
+# Ajout d'une proie
 def ajout_proie(config, i, j):
-    
     config[i][j]+=1
     affiche_grille(config)
-    print(config)
     return config
     
-
-
 
 
 ### Programme principal
@@ -85,7 +81,7 @@ racine = tk.Tk()
 racine.title("Simulation proies-prédateurs")
 canvas = tk.Canvas(racine, width = LARGEUR, height = HAUTEUR)
 init_grille() # Création de la grille de départ
-ajout_proie(config_cur,5,5)
+ajout_proie(config_cur,5,5) # Ajout d'une proie en coordonnées (5, 5)
 #bouton1 = tk.Button(racine, text = "", command = )
 
 # Placement des widgets
@@ -94,12 +90,3 @@ canvas.grid(column = 1, row = 0, rowspan = 3)
 
 # Boucle principale
 racine.mainloop()
-
-
-
-
-
-
-
-
-###################################################################################################################################
