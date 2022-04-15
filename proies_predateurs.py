@@ -9,10 +9,8 @@
 
 ### Import des librairies
 
-from secrets import token_urlsafe
 import tkinter as tk
 import random as rd
-from venv import create
 
 ### Définitions des constantes
 
@@ -28,7 +26,7 @@ HAUTEUR_CASE = HAUTEUR / 1.1 // N
 
 Npro = 10 # Nombre initial de proies (Npro proies apparaissent au début)
 Fpro = 3 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour)
-tour = 0
+tour = 0 # Numéro du tour
 
 
 ### Définitions des fonctions
@@ -42,7 +40,7 @@ def choix_couleur(n):
         return "yellow"
     if n > 1 and n < 2: # Prédateur
         return "yellow"
-    else:
+    else: # Autre
         return "grey"
 
 
@@ -67,7 +65,7 @@ def affiche_grille(config):
     for i in range(1, N+1):
         for j in range(1, N+1):
             col = choix_couleur(config[i][j])
-            canvas.itemconfigure(grille[i][j], fill=col)
+            canvas.itemconfigure(grille[i][j], fill = col)
 
 
 # Initialise les proies
