@@ -65,8 +65,8 @@ def affiche_grille(config):
             canvas.itemconfigure(grille[i][j], fill=col)
 
 
-# Ajout d'une proie
-def ajout_proie(config):
+# Ajout de proies
+def init_proies(config):
     """Ajoute Npro proies à des coordonnées aléatoires"""
     for i in range(Npro):
         config[rd.randint(0, 31)][rd.randint(0, 31)] += 1
@@ -82,7 +82,7 @@ racine = tk.Tk()
 racine.title("Simulation proies-prédateurs")
 canvas = tk.Canvas(racine, width = LARGEUR, height = HAUTEUR)
 init_grille() # Création de la grille de départ
-ajout_proie(config_cur) # Ajout de Npro proies à des coordonnées aléatoires
+init_proies(config_cur) # Ajout de Npro proies à des coordonnées aléatoires
 bouton1 = tk.Button(racine, text = "TEST")
 
 # Placement des widgets
