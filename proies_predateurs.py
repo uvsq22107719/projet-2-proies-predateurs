@@ -86,8 +86,8 @@ def passer_tour():
     """Fait passer les tours (ajout de proies, modification de l'âge)"""
     global config
     global tour
-    for ligne in range(len(config)):
-        for chiffre in range(len(config[ligne])):
+    for ligne in range(len(config)): # Pour chaque ligne
+        for chiffre in range(len(config[ligne])): # Pour chaque chiffre
             #if config[ligne][chiffre] > 0:
             #    config[ligne][chiffre] -= 0.01 # cette commande crée des chiffres pas ronds jsp pourquoi, par ex. 0.0199999999997
 
