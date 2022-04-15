@@ -88,23 +88,18 @@ def passer_tour():
     """Fait passer les tours (ajout de proies, modification de l'âge)"""
     global config
     global tours
-    for ligne in range(len(config)):
+    for ligne in range(len(config)): # il faut changer ce code, par ex. enlever 0.01 pour chaque chiffre supérieur à 0. Mais ça faisait des chiffres pas ronds jsp pourquoi
         for chiffre in range(len(config[ligne])):
             if config[ligne][chiffre] == 0.05:
                 config[ligne][chiffre] = 0.04
-                print(config[ligne][chiffre])
             elif config[ligne][chiffre] == 0.04:
                 config[ligne][chiffre] = 0.03
-                print(config[ligne][chiffre])
             elif config[ligne][chiffre] == 0.03:
                 config[ligne][chiffre] = 0.02
-                print(config[ligne][chiffre])
             elif config[ligne][chiffre] == 0.02:
                 config[ligne][chiffre] = 0.01
-                print(config[ligne][chiffre])
             elif config[ligne][chiffre] == 0.01:
                 config[ligne][chiffre] = 0
-                print(config[ligne][chiffre])
     cpt = Fpro
     while cpt > 0:
         i, j = rd.randint(1, N), rd.randint(1, N)
@@ -125,13 +120,13 @@ racine.title("Simulation proies-prédateurs")
 canvas = tk.Canvas(racine, width = LARGEUR, height = HAUTEUR)
 init_grille() # Création de la grille de départ
 init_proies() # Ajout de Npro proies à des coordonnées aléatoires
-bouton_tours = tk.Button(racine, text = "Tours", command = passer_tour)
+bouton_tours = tk.Button(racine, text = "Tour suivant", command = passer_tour)
 label_tours = tk.Label(racine, text = ("Tour", tours))
 
 # Placement des widgets
-canvas.grid(column = 1, row = 1, rowspan = 3)
+canvas.grid(column = 2, row = 0, rowspan = 4)
 bouton_tours.grid(column = 0, row = 1)
-label_tours.grid(column = 1, row = 0)
+label_tours.grid(column = 0, row = 0)
 
 # Boucle principale
 racine.mainloop()
