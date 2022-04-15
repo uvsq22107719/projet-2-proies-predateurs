@@ -11,6 +11,7 @@
 
 import tkinter as tk
 import random as rd
+from venv import create
 
 ### Définitions des constantes
 
@@ -24,7 +25,7 @@ HAUTEUR_CASE = HAUTEUR / 1.1 // N
 
 ### Définitions des variables globales
 
-Npro = 10 # Nombre initial de proies (10 proies apparaissent au début)
+Npro = 10 # Nombre initial de proies (Npro proies apparaissent au début)
 Fpro = 3 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour)
 
 
@@ -33,11 +34,14 @@ Fpro = 3 # Fréquence de naissance des proies (Fpro proies naissent à chaque to
 # Choix des couleurs
 def choix_couleur(n):
     """Retourne une couleur à partir de l'entier n"""
-    liste_col = ["white", "yellow", "red", "blue"]
-    if n < 4:
-        return liste_col[n]
+    if n == 0: # Rien
+        return "white"
+    if n > 0 and n < 1: # Proie
+        return "yellow"
+    if n > 1 and n < 2: # Prédateur
+        return "yellow"
     else:
-        return "grey" + str(min(n + 20, 100))
+        return "grey"
 
 
 # Création de la grille
@@ -50,7 +54,8 @@ def init_grille():
         x = (i - 1) * LARGEUR_CASE
         for j in range(1, N+1):
             y = (j - 1) * HAUTEUR_CASE
-            carre = canvas.create_rectangle(x, y, x + LARGEUR_CASE, y + HAUTEUR_CASE, fill = "white")
+            col = "white"
+            carre = canvas.create_rectangle(x, y, x + LARGEUR_CASE, y + HAUTEUR_CASE, fill = col)
             grille[i][j] = carre
 
 
@@ -71,21 +76,37 @@ def init_proies():
     while cpt > 0:
         i, j = rd.randint(1, N), rd.randint(1, N)
         if config[i][j] == 0:
-            config[i][j] = 1
+            config[i][j] = 0.05
             cpt -= 1
     affiche_grille(config)
 
 
-# Ajoute des proies
-def ajout_proies():
-    """Ajoute Fpro proies à des coordonnées aléatoires"""
+# Passe un tour
+def passer_tour():
+    """Fait passer les tours (ajout de proies, modification de l'âge)"""
     global config
+    for ligne in range(len(config)):
+        for chiffre in range(len(config[ligne])):
+            if config[ligne][chiffre] == 0.05:
+                config[ligne][chiffre] = 0.04
+                print(config[ligne][chiffre])
+            elif config[ligne][chiffre] == 0.04:
+                config[ligne][chiffre] = 0.03
+                print(config[ligne][chiffre])
+            elif config[ligne][chiffre] == 0.03:
+                config[ligne][chiffre] = 0.02
+                print(config[ligne][chiffre])
+            elif config[ligne][chiffre] == 0.02:
+                config[ligne][chiffre] = 0.01
+                print(config[ligne][chiffre])
+            elif config[ligne][chiffre] == 0.01:
+                config[ligne][chiffre] = 0
+                print(config[ligne][chiffre])
     cpt = Fpro
     while cpt > 0:
-        print("test")
         i, j = rd.randint(1, N), rd.randint(1, N)
         if config[i][j] == 0:
-            config[i][j] = 1
+            config[i][j] = 0.05
             cpt -= 1
     affiche_grille(config)
 
@@ -99,7 +120,7 @@ racine.title("Simulation proies-prédateurs")
 canvas = tk.Canvas(racine, width = LARGEUR, height = HAUTEUR)
 init_grille() # Création de la grille de départ
 init_proies() # Ajout de Npro proies à des coordonnées aléatoires
-bouton1 = tk.Button(racine, text = "Tours", command = ajout_proies)
+bouton1 = tk.Button(racine, text = "Tours", command = passer_tour)
 
 # Placement des widgets
 canvas.grid(column = 1, row = 1, rowspan = 3)
