@@ -24,7 +24,7 @@ HAUTEUR_CASE = HAUTEUR / 1.1 // N
 
 ### Définitions des variables globales
 
-Npro = 10 # Nombre initial de proies (Npro proies apparaissent au début)
+Npro = 6 # Nombre initial de proies (Npro proies apparaissent au début)
 Fpro = 3 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour)
 tour = 0 # Numéro du tour
 
