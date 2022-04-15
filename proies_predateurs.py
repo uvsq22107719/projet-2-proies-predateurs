@@ -14,7 +14,7 @@ import random as rd
 
 ### Définitions des constantes
 
-N = 30 # Taille de la matrice
+N = 50 # Taille de la matrice
 HAUTEUR = 700 # Hauteur du canevas
 LARGEUR = 700 # Largeur du canevas
 LARGEUR_CASE = LARGEUR / 1.1 // N
@@ -24,8 +24,9 @@ HAUTEUR_CASE = HAUTEUR / 1.1 // N
 
 ### Définitions des variables globales
 
-Npro = 6 # Nombre initial de proies (Npro proies apparaissent au début)
+Npro = 10 # Nombre initial de proies (Npro proies apparaissent au début)
 Fpro = 3 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour)
+Apro = 5 # Espérance de vie en nombre de tours
 tour = 0 # Numéro du tour
 
 
@@ -35,13 +36,16 @@ tour = 0 # Numéro du tour
 def choix_couleur(n):
     """Retourne une couleur à partir de l'entier n"""
     if n == 0: # Rien
-        return "white"
-    if n > 0 and n < 1: # Proie
-        return "yellow"
-    if n > 1 and n < 2: # Prédateur
-        return "yellow"
-    else: # Autre
-        return "grey"
+        return "green"
+    else:
+        x = list(n) # Pour récupérer la première lettre (par exemple de L5)
+        animal = x[0] # Si la première lettre est un L, c'est un lapin (proie)
+        if animal == "L": # Lapin (Proie)
+            return "white"
+        elif animal == "R": # Renard (Prédateur)
+            return "orange"
+        else: # Autre
+            return "grey"
 
 
 # Création de la grille
@@ -54,8 +58,8 @@ def init_grille():
         x = (i - 1) * LARGEUR_CASE
         for j in range(1, N+1):
             y = (j - 1) * HAUTEUR_CASE
-            col = "white"
-            carre = canvas.create_rectangle(x, y, x + LARGEUR_CASE, y + HAUTEUR_CASE, fill = col)
+            col = "green"
+            carre = canvas.create_rectangle(x, y, x + LARGEUR_CASE, y + HAUTEUR_CASE, fill = col, outline = "grey")
             grille[i][j] = carre
 
 
@@ -76,7 +80,8 @@ def init_proies():
     while cpt > 0:
         i, j = rd.randint(1, N), rd.randint(1, N)
         if config[i][j] == 0:
-            config[i][j] = 0.05
+            nom = "L" + str(Apro) # L = lapin (proie) et Apro = espérance de vie
+            config[i][j] = nom
             cpt -= 1
     affiche_grille(config)
 
@@ -86,28 +91,30 @@ def passer_tour():
     """Fait passer les tours (ajout de proies, modification de l'âge)"""
     global config
     global tour
-    for ligne in range(len(config)): # Pour chaque ligne
-        for chiffre in range(len(config[ligne])): # Pour chaque chiffre
-            #if config[ligne][chiffre] > 0:
-            #    config[ligne][chiffre] -= 0.01 # cette commande crée des chiffres pas ronds jsp pourquoi, par ex. 0.0199999999997
-
-            # Donc on utilise ça pour le moment :
-            if config[ligne][chiffre] == 0.05:
-                config[ligne][chiffre] = 0.04
-            elif config[ligne][chiffre] == 0.04:
-                config[ligne][chiffre] = 0.03
-            elif config[ligne][chiffre] == 0.03:
-                config[ligne][chiffre] = 0.02
-            elif config[ligne][chiffre] == 0.02:
-                config[ligne][chiffre] = 0.01
-            elif config[ligne][chiffre] == 0.01:
-                config[ligne][chiffre] = 0
+    # Modification de l'espérance de vie (retirer 1 à chaque tour)
+    for ligne in range(len(config)): # Pour chaque ligne (ex : [0, 0, L5, L2, R3, 0, 0, L1])
+        for code in range(len(config[ligne])): # Pour chaque code (ex : L5)
+            if config[ligne][code] != 0: # Seulement si c'est pas un 0
+                l = list(str(config[ligne][code])) # Pour récupérer le nombre (par exemple de L5)
+                lettre = str(l[0])
+                del l[0] # Supprimer la lettre du début (si L15, devient 15)
+                nombre = ""
+                for i in l:
+                    nombre = str(nombre) + str(i)
+                nombre = int(nombre) - 1 # Si le chiffre est 5, l'animal a une espérance de vie de 5 tours. Soustrait 1.
+                if nombre == 0: # Si c'est par exemple L0, remplacer par 0
+                    config[ligne][code] = 0
+                else: # Sinon, recréer le code à jour (par exemple L4)
+                    config[ligne][code] = str(lettre + str(nombre))
+    # Ajout de proies
     cpt = Fpro
     while cpt > 0:
         i, j = rd.randint(1, N), rd.randint(1, N)
-        if config[i][j] == 0:
-            config[i][j] = 0.05
+        if config[i][j] == 0: # Si la case est vide
+            config[i][j] = "L" + str(Apro) # L = lapin (proie) et Apro = espérance de vie
             cpt -= 1
+        else: # Si la case n'est pas vide, recommencer la boucle
+            continue
     affiche_grille(config)
     tour += 1
     label_tours.configure(text = ("Tour", tour)) # Actualise le texte du numéro de tour en haut
@@ -126,7 +133,7 @@ bouton_tours = tk.Button(racine, text = "Tour suivant", command = passer_tour)
 label_tours = tk.Label(racine, text = ("Tour", tour))
 
 # Placement des widgets
-canvas.grid(column = 2, row = 0, rowspan = 4)
+canvas.grid(column = 1, row = 0, rowspan = 4)
 bouton_tours.grid(column = 0, row = 1)
 label_tours.grid(column = 0, row = 0)
 
