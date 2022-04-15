@@ -28,7 +28,7 @@ HAUTEUR_CASE = HAUTEUR / 1.1 // N
 
 Npro = 10 # Nombre initial de proies (Npro proies apparaissent au début)
 Fpro = 3 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour)
-tours = 0
+tour = 0
 
 
 ### Définitions des fonctions
@@ -87,9 +87,13 @@ def init_proies():
 def passer_tour():
     """Fait passer les tours (ajout de proies, modification de l'âge)"""
     global config
-    global tours
-    for ligne in range(len(config)): # il faut changer ce code, par ex. enlever 0.01 pour chaque chiffre supérieur à 0. Mais ça faisait des chiffres pas ronds jsp pourquoi
+    global tour
+    for ligne in range(len(config)):
         for chiffre in range(len(config[ligne])):
+            #if config[ligne][chiffre] > 0:
+            #    config[ligne][chiffre] -= 0.01 # cette commande crée des chiffres pas ronds jsp pourquoi, par ex. 0.0199999999997
+
+            # Donc on utilise ça pour le moment :
             if config[ligne][chiffre] == 0.05:
                 config[ligne][chiffre] = 0.04
             elif config[ligne][chiffre] == 0.04:
@@ -107,8 +111,8 @@ def passer_tour():
             config[i][j] = 0.05
             cpt -= 1
     affiche_grille(config)
-    tours += 1
-    label_tours.configure(text = ("Tour", tours)) # Actualise le texte du numéro de tour en haut
+    tour += 1
+    label_tours.configure(text = ("Tour", tour)) # Actualise le texte du numéro de tour en haut
 
 
 
@@ -121,7 +125,7 @@ canvas = tk.Canvas(racine, width = LARGEUR, height = HAUTEUR)
 init_grille() # Création de la grille de départ
 init_proies() # Ajout de Npro proies à des coordonnées aléatoires
 bouton_tours = tk.Button(racine, text = "Tour suivant", command = passer_tour)
-label_tours = tk.Label(racine, text = ("Tour", tours))
+label_tours = tk.Label(racine, text = ("Tour", tour))
 
 # Placement des widgets
 canvas.grid(column = 2, row = 0, rowspan = 4)
