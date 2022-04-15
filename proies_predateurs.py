@@ -15,16 +15,18 @@ import random as rd
 ### Définitions des constantes
 
 N = 30 # Taille de la matrice
-HAUTEUR = 450 # Hauteur du canevas
-LARGEUR = 450 # Largeur du canevas
-LARGEUR_CASE = LARGEUR // N
-HAUTEUR_CASE = HAUTEUR // N
-Npro = 10 # Nombre de proies
+HAUTEUR = 700 # Hauteur du canevas
+LARGEUR = 700 # Largeur du canevas
+LARGEUR_CASE = LARGEUR / 1.1 // N
+HAUTEUR_CASE = HAUTEUR / 1.1 // N
 
 
 
 ### Définitions des variables globales
- 
+
+Npro = 10 # Nombre initial de proies (10 proies apparaissent au début)
+Fpro = 3 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour)
+
 
 
 ### Définitions des fonctions
@@ -65,15 +67,25 @@ def affiche_grille(config):
             canvas.itemconfigure(grille[i][j], fill=col)
 
 
-# Ajout de proies
+# Initialise les proies
 def init_proies(config):
     """Ajoute Npro proies à des coordonnées aléatoires"""
     for i in range(Npro):
         config[rd.randint(0, 31)][rd.randint(0, 31)] += 1
     affiche_grille(config)
-    return config
 
 
+# Ajout de proies
+def ajout_proies(config):
+    for i in range(Npro):
+        config[rd.randint(0, 31)][rd.randint(0, 31)] += 1
+    affiche_grille(config)
+
+
+def tours():
+    """"""
+    while tours == True:
+        ajout_proies(config)
 
 ### Programme principal
 
@@ -83,6 +95,7 @@ racine.title("Simulation proies-prédateurs")
 canvas = tk.Canvas(racine, width = LARGEUR, height = HAUTEUR)
 init_grille() # Création de la grille de départ
 init_proies(config_cur) # Ajout de Npro proies à des coordonnées aléatoires
+tours()
 bouton1 = tk.Button(racine, text = "TEST")
 
 # Placement des widgets
