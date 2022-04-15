@@ -26,7 +26,8 @@ HAUTEUR_CASE = HAUTEUR / 1.1 // N
 
 Npro = 10 # Nombre initial de proies (10 proies apparaissent au début)
 Fpro = 3 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour)
-
+cpt = 1
+tours = True
 
 
 ### Définitions des fonctions
@@ -67,25 +68,28 @@ def affiche_grille(config):
             canvas.itemconfigure(grille[i][j], fill=col)
 
 
-# Initialise les proies
-def init_proies(config):
-    """Ajoute Npro proies à des coordonnées aléatoires"""
-    for i in range(Npro):
-        config[rd.randint(0, 31)][rd.randint(0, 31)] += 1
-    affiche_grille(config)
-
-
-# Ajout de proies
+# Ajoute des proies
 def ajout_proies(config):
-    for i in range(Npro):
-        config[rd.randint(0, 31)][rd.randint(0, 31)] += 1
+    """Ajoute Npro proies à des coordonnées aléatoires"""
+    global cpt
+    cpt2 = Npro
+    cpt3 = Fpro
+    if cpt == 1:
+        cpt -= 1
+        while cpt2 > 0:
+            i, j = rd.randint(1, N), rd.randint(1, N)
+            if config[i][j] == 0:
+                config[i][j] = 1
+                cpt2 -= 1
+    else:
+        while cpt3 > 0:
+            i, j = rd.randint(1, N), rd.randint(1, N)
+            if config[i][j] == 0:
+                config[i][j] = 1
+                cpt3 -= 1
     affiche_grille(config)
+    
 
-
-def tours():
-    """"""
-    while tours == True:
-        ajout_proies(config)
 
 ### Programme principal
 
@@ -94,9 +98,8 @@ racine = tk.Tk()
 racine.title("Simulation proies-prédateurs")
 canvas = tk.Canvas(racine, width = LARGEUR, height = HAUTEUR)
 init_grille() # Création de la grille de départ
-init_proies(config_cur) # Ajout de Npro proies à des coordonnées aléatoires
-tours()
-bouton1 = tk.Button(racine, text = "TEST")
+ajout_proies(config_cur) # Ajout de Npro proies à des coordonnées aléatoires
+bouton1 = tk.Button(racine, text = "TEST", command = ajout_proies(config_cur))
 
 # Placement des widgets
 canvas.grid(column = 1, row = 1, rowspan = 3)
