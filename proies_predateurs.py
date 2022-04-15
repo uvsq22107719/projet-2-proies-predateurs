@@ -9,6 +9,7 @@
 
 ### Import des librairies
 
+from secrets import token_urlsafe
 import tkinter as tk
 import random as rd
 from venv import create
@@ -27,6 +28,7 @@ HAUTEUR_CASE = HAUTEUR / 1.1 // N
 
 Npro = 10 # Nombre initial de proies (Npro proies apparaissent au début)
 Fpro = 3 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour)
+tours = 0
 
 
 ### Définitions des fonctions
@@ -85,6 +87,7 @@ def init_proies():
 def passer_tour():
     """Fait passer les tours (ajout de proies, modification de l'âge)"""
     global config
+    global tours
     for ligne in range(len(config)):
         for chiffre in range(len(config[ligne])):
             if config[ligne][chiffre] == 0.05:
@@ -109,6 +112,8 @@ def passer_tour():
             config[i][j] = 0.05
             cpt -= 1
     affiche_grille(config)
+    tours += 1
+    label_tours.configure(text = ("Tour", tours)) # Actualise le texte du numéro de tour en haut
 
 
 
@@ -120,11 +125,13 @@ racine.title("Simulation proies-prédateurs")
 canvas = tk.Canvas(racine, width = LARGEUR, height = HAUTEUR)
 init_grille() # Création de la grille de départ
 init_proies() # Ajout de Npro proies à des coordonnées aléatoires
-bouton1 = tk.Button(racine, text = "Tours", command = passer_tour)
+bouton_tours = tk.Button(racine, text = "Tours", command = passer_tour)
+label_tours = tk.Label(racine, text = ("Tour", tours))
 
 # Placement des widgets
 canvas.grid(column = 1, row = 1, rowspan = 3)
-bouton1.grid(column = 0, row = 1)
+bouton_tours.grid(column = 0, row = 1)
+label_tours.grid(column = 1, row = 0)
 
 # Boucle principale
 racine.mainloop()
