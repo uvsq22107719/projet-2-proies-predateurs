@@ -17,8 +17,11 @@ import random as rd
 N = 30 # Taille de la matrice
 HAUTEUR = 450 # Hauteur du canevas
 LARGEUR = 450 # Largeur du canevas
-LARGEUR_CASE = LARGEUR // N 
+LARGEUR_CASE = LARGEUR // N
 HAUTEUR_CASE = HAUTEUR // N
+Npro = 10 # Nombre de proies
+
+
 
 ### Définitions des variables globales
  
@@ -38,11 +41,7 @@ def choix_couleur(n):
 
 # Création de la grille
 def init_grille():
-    """Retourne une grille carrée vide
-       dimension N+2, les éléments de la configuration vont de 1 à N
-       les indices 0 et N+1 sont les bords et permettent de ne pas gérer
-       de cas particuliers
-    """
+    """Retourne une grille carrée vide dimension N+2, les éléments de la configuration vont de 1 à N les indices 0 et N+1 sont les bords et permettent de ne pas gérer de cas particuliers"""
     global grille, config_cur
     grille = [[0 for i in range(N+2)] for j in range(N+2)]
     config_cur = [[0 for i in range(N+2)] for j in range(N+2)]
@@ -67,11 +66,13 @@ def affiche_grille(config):
 
 
 # Ajout d'une proie
-def ajout_proie(config, i, j):
-    config[i][j]+=1
+def ajout_proie(config):
+    """Ajoute Npro proies à des coordonnées aléatoires"""
+    for i in range(Npro):
+        config[rd.randint(0, 31)][rd.randint(0, 31)] += 1
     affiche_grille(config)
     return config
-    
+
 
 
 ### Programme principal
@@ -81,12 +82,12 @@ racine = tk.Tk()
 racine.title("Simulation proies-prédateurs")
 canvas = tk.Canvas(racine, width = LARGEUR, height = HAUTEUR)
 init_grille() # Création de la grille de départ
-ajout_proie(config_cur,5,5) # Ajout d'une proie en coordonnées (5, 5)
-#bouton1 = tk.Button(racine, text = "", command = )
+ajout_proie(config_cur) # Ajout de Npro proies à des coordonnées aléatoires
+bouton1 = tk.Button(racine, text = "TEST")
 
 # Placement des widgets
-canvas.grid(column = 1, row = 0, rowspan = 3)
-#bouton1.grid(column = 0, row = 0)
+canvas.grid(column = 1, row = 1, rowspan = 3)
+bouton1.grid(column = 0, row = 1)
 
 # Boucle principale
 racine.mainloop()
