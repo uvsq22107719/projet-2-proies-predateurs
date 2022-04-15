@@ -24,8 +24,8 @@ HAUTEUR_CASE = HAUTEUR / 1.1 // N
 
 ### Définitions des variables globales
 
-Npro = 6 # Nombre initial de proies (10 proies apparaissent au début)
-Fpro = 2 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour)
+Npro = 10 # Nombre initial de proies (10 proies apparaissent au début)
+Fpro = 3 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour)
 
 
 ### Définitions des fonctions
@@ -99,7 +99,7 @@ racine.title("Simulation proies-prédateurs")
 canvas = tk.Canvas(racine, width = LARGEUR, height = HAUTEUR)
 init_grille() # Création de la grille de départ
 init_proies() # Ajout de Npro proies à des coordonnées aléatoires
-bouton1 = tk.Button(racine, text = "Tours", command = ajout_proies())
+bouton1 = tk.Button(racine, text = "Tours", command = ajout_proies)
 
 # Placement des widgets
 canvas.grid(column = 1, row = 1, rowspan = 3)
