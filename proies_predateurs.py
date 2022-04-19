@@ -35,17 +35,15 @@ tour = 0 # Numéro du tour
 # Choix des couleurs
 def choix_couleur(n):
     """Retourne une couleur à partir de l'entier n"""
-    if n == 0: # Rien
-        return "green"
+    if n == 0: # Si il n'y a rien
+        return "green" # Couleur du fond
     else:
-        x = list(n) # Pour récupérer la première lettre (par exemple de L5)
-        animal = x[0] # Si la première lettre est un L, c'est un lapin (proie)
-        if animal == "L": # Lapin (Proie)
-            return "white"
-        elif animal == "R": # Renard (Prédateur)
-            return "orange"
-        else: # Autre
-            return "grey"
+        if n[0] == "Proie": # Si c'est une proie
+            return "white" # Couleur des proies
+        elif n[0] == "Prédateur": # Si c'est un prédateur
+            return "red" # Couleur des prédateurs
+        else: # Si c'est autre chose
+            return "grey" # Pour mettre les erreurs en évidence on met du gris
 
 
 # Création de la grille
@@ -58,7 +56,7 @@ def init_grille():
         x = (i - 1) * LARGEUR_CASE
         for j in range(1, N+1):
             y = (j - 1) * HAUTEUR_CASE
-            col = "green"
+            col = "green" # Couleur du fond
             carre = canvas.create_rectangle(x, y, x + LARGEUR_CASE, y + HAUTEUR_CASE, fill = col, outline = "grey")
             grille[i][j] = carre
 
@@ -79,9 +77,8 @@ def init_proies():
     cpt = Npro
     while cpt > 0:
         i, j = rd.randint(1, N), rd.randint(1, N)
-        if config[i][j] == 0:
-            nom = "L" + str(Apro) # L = lapin (proie) et Apro = espérance de vie
-            config[i][j] = nom
+        if config[i][j] == 0: # Si c'est une case vide
+            config[i][j] = ["Proie", Apro] # Création d'une liste avec toutes les infos sur l'animal (ici c'est une proie avec Apro le nombre de tours d'espérance de vie)
             cpt -= 1
     affiche_grille(config)
 
@@ -92,26 +89,18 @@ def passer_tour():
     global config
     global tour
     # Modification de l'espérance de vie (retirer 1 à chaque tour)
-    for ligne in range(len(config)): # Pour chaque ligne (ex : [0, 0, L5, L2, R3, 0, 0, L1])
-        for code in range(len(config[ligne])): # Pour chaque code (ex : L5)
-            if config[ligne][code] != 0: # Seulement si c'est pas un 0
-                l = list(str(config[ligne][code])) # Pour récupérer le nombre (par exemple de L5)
-                lettre = str(l[0])
-                del l[0] # Supprimer la lettre du début (si L15, devient 15)
-                nombre = ""
-                for i in l:
-                    nombre = str(nombre) + str(i)
-                nombre = int(nombre) - 1 # Si le chiffre est 5, l'animal a une espérance de vie de 5 tours. Soustrait 1.
-                if nombre == 0: # Si c'est par exemple L0, remplacer par 0
-                    config[ligne][code] = 0
-                else: # Sinon, recréer le code à jour (par exemple L4)
-                    config[ligne][code] = str(lettre + str(nombre))
+    for ligne in range(len(config)): # Pour chaque ligne (ex : [0, 0, ["Proie", 5], ["Proie", 2], 0, ["Prédateur", 5], 0])
+        for element in range(len(config[ligne])): # Pour chaque élément (ex : ["Proie", 5])
+            if config[ligne][element] != 0: # Seulement si c'est pas un 0
+                config[ligne][element][1] -= 1 # Retirer 1 à l'espérance de vie (ex : ["Proie", 5] devient ["Proie", 4])
+                if config[ligne][element][1] == 0: # Si c'est par exemple [Proie, 0], remplacer par 0 
+                    config[ligne][element] = 0
     # Ajout de proies
     cpt = Fpro
     while cpt > 0:
         i, j = rd.randint(1, N), rd.randint(1, N)
         if config[i][j] == 0: # Si la case est vide
-            config[i][j] = "L" + str(Apro) # L = lapin (proie) et Apro = espérance de vie
+            config[i][j] = ["Proie", Apro] # Création d'une liste avec toutes les infos sur l'animal (ici c'est une proie avec Apro le nombre de tours d'espérance de vie)
             cpt -= 1
         else: # Si la case n'est pas vide, recommencer la boucle
             continue
