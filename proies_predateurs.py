@@ -17,15 +17,24 @@ import random as rd
 N = 50 # Taille de la matrice
 HAUTEUR = 700 # Hauteur du canevas
 LARGEUR = 700 # Largeur du canevas
-LARGEUR_CASE = LARGEUR / 1.1 // N
-HAUTEUR_CASE = HAUTEUR / 1.1 // N
+LARGEUR_CASE = LARGEUR / 1.1 // N # Largeur des cases
+HAUTEUR_CASE = HAUTEUR / 1.1 // N # Hauteur des cases
+
+MIAM = 5 # Niveau d'énergie gagné lorsqu'un prédateur mange une proie
+Erepro = 15 # Niveau d'énergie nécessaire pour qu'un prédateur puisse se reproduire
+FLAIR = 5 # Distance maximale à laquelle un prédateur peut sentir un proie
+
 
 ### Définitions des variables globales
+
+tour = 0 # Numéro du tour
 
 Npro = 10 # Nombre initial de proies (Npro proies apparaissent au début)
 Fpro = 3 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour)
 Apro = 5 # Espérance de vie des proies en nombre de tours
-tour = 0 # Numéro du tour
+Npre = 2 # Nombre initial de prédateurs (Npre prédateurs apparaissent au début)
+Apre = 15 # Espérance de vie des prédateurs en nombre de tours
+Epre = 12 # Énergie des prédateurs (baisse de 1 par tour, s'il elle atteint zéro, le prédateur meurt de faim)
 
 
 
@@ -75,7 +84,7 @@ def init_proies():
     global config
     cpt = Npro
     while cpt > 0:
-        i, j = rd.randint(1, N), rd.randint(1, N)
+        i, j = rd.randint(1, N), rd.randint(1, N) # Génération des coordonnées aléatoires
         if config[i][j] == 0: # Si c'est une case vide
             config[i][j] = ["Proie", Apro] # Création d'une liste avec toutes les infos sur l'animal (ici c'est une proie avec Apro le nombre de tours d'espérance de vie)
             cpt -= 1
@@ -84,7 +93,7 @@ def init_proies():
 
 # Passe un tour
 def passer_tour():
-    """Fait passer les tours (ajout de proies, modification de l'âge)"""
+    """Fait passer les tours (ajout de proies, modification de l'âge, ...)"""
     global config
     global tour
     # Modification de l'espérance de vie (retirer 1 à chaque tour)
@@ -97,7 +106,7 @@ def passer_tour():
     # Ajout de proies
     cpt = Fpro # Compteur égal à Fpro, la fréquence de naissance des proies
     while cpt > 0:
-        i, j = rd.randint(1, N), rd.randint(1, N) # Génération de coordonnées aléatoires
+        i, j = rd.randint(1, N), rd.randint(1, N) # Génération des coordonnées aléatoires
         if config[i][j] == 0: # Si la case est vide
             config[i][j] = ["Proie", Apro] # Création d'une liste avec toutes les infos sur l'animal (ici c'est une proie avec Apro le nombre de tours d'espérance de vie)
             cpt -= 1
