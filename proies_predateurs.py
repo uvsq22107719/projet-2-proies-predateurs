@@ -14,7 +14,7 @@ import random as rd
 
 ### Définitions des constantes
 
-N = 30 # Taille de la matrice
+N = 50 # Taille de la matrice
 HAUTEUR = 700 # Hauteur du canevas
 LARGEUR = 700 # Largeur du canevas
 LARGEUR_CASE = LARGEUR / 1.1 // N # Largeur des cases
@@ -29,9 +29,9 @@ FLAIR = 5 # Distance maximale à laquelle un prédateur peut sentir un proie
 
 tour = 0 # Numéro du tour
 
-Npro = 10 # Nombre initial de proies (Npro proies apparaissent au début)
-Fpro = 3 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour)
-Apro = 5 # Espérance de vie des proies en nombre de tours
+Npro = 1 # Nombre initial de proies (Npro proies apparaissent au début)
+Fpro = 0 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour)
+Apro = 150 # Espérance de vie des proies en nombre de tours
 Npre = 2 # Nombre initial de prédateurs (Npre prédateurs apparaissent au début)
 Apre = 15 # Espérance de vie des prédateurs en nombre de tours
 Epre = 12 # Énergie des prédateurs (baisse de 1 par tour, s'il elle atteint zéro, le prédateur meurt de faim)
@@ -116,11 +116,75 @@ def passer_tour():
     for ligne in range(len(config)): # Pour chaque ligne (ex : [0, 0, ["Proie", 5], ["Proie", 2], 0, ["Prédateur", 5], 0])
         for element in range(len(config[ligne])): # Pour chaque élément (ex : ["Proie", 5])
             if config[ligne][element] != 0 and config[ligne][element][0] == "Proie": # Seulement si c'est une proie
-                print(config)
+                if config[ligne-1][element-1] == 0:
+                    config_ligne_moins_un_element_moins_un = True
+                else:
+                    config_ligne_moins_un_element_moins_un = False
                 if config[ligne-1][element] == 0:
-                    config[ligne-1][element] = config[ligne][element]
-                    config[ligne][element] = 0
-                    print(config)
+                    config_ligne_moins_un_element = True
+                else:
+                    config_ligne_moins_un_element = False
+                if config[ligne-1][element+1] == 0:
+                    config_ligne_moins_un_element_plus_un = True
+                else:
+                    config_ligne_moins_un_element_plus_un = False
+                if config[ligne][element-1] == 0:
+                    config_ligne_element_moins_un = True
+                else:
+                    config_ligne_element_moins_un = False
+                if config[ligne][element+1] == 0:
+                    config_ligne_element_plus_un = True
+                else:
+                    config_ligne_element_plus_un = False
+                if config[ligne+1][element-1] == 0:
+                    config_ligne_plus_un_element_moins_un = True
+                else:
+                    config_ligne_plus_un_element_moins_un = False
+                if config[ligne+1][element] == 0:
+                    config_ligne_plus_un_element = True
+                else:
+                    config_ligne_plus_un_element = False
+                if config[ligne+1][element+1] == 0:
+                    config_ligne_plus_un_element_plus_un = True
+                else:
+                    config_ligne_plus_un_element_plus_un = False
+                deplacement = True
+                while deplacement == True:
+                    x = rd.randint(1,8)
+                    if config_ligne_moins_un_element_moins_un == True and x == 1:
+                        config[ligne-1][element-1] = config[ligne][element]
+                        config[ligne][element] = 0
+                        deplacement = False
+                    elif config_ligne_moins_un_element == True and x == 2:
+                        config[ligne-1][element] = config[ligne][element]
+                        config[ligne][element] = 0
+                        deplacement = False
+                    elif config_ligne_moins_un_element_plus_un == True and x == 3:
+                        config[ligne-1][element+1] = config[ligne][element]
+                        config[ligne][element] = 0
+                        deplacement = False
+                    elif config_ligne_element_moins_un == True and x == 4:
+                        config[ligne][element-1] = config[ligne][element]
+                        config[ligne][element] = 0
+                        deplacement = False
+                    elif config_ligne_element_plus_un == True and x == 5:
+                        config[ligne][element+1] = config[ligne][element]
+                        config[ligne][element] = 0
+                        deplacement = False
+                    elif config_ligne_plus_un_element_moins_un == True and x == 6:
+                        config[ligne+1][element-1] = config[ligne][element]
+                        config[ligne][element] = 0
+                        deplacement = False
+                    elif config_ligne_plus_un_element == True and x == 7:
+                        config[ligne+1][element] = config[ligne][element]
+                        config[ligne][element] = 0
+                        deplacement = False
+                    elif config_ligne_plus_un_element_plus_un == True and x == 8:
+                        config[ligne+1][element+1] = config[ligne][element]
+                        config[ligne][element] = 0
+                        deplacement = False
+                    else:
+                        continue
                 
     
     affiche_grille(config)
