@@ -14,7 +14,7 @@ import random as rd
 
 ### Définitions des constantes
 
-N = 50 # Taille de la matrice
+N = 10 # Taille de la matrice
 HAUTEUR = 700 # Hauteur du canevas
 LARGEUR = 700 # Largeur du canevas
 LARGEUR_CASE = LARGEUR / 1.1 // N # Largeur des cases
@@ -116,7 +116,7 @@ def passer_tour():
     for ligne in range(len(config)): # Pour chaque ligne (ex : [0, 0, ["Proie", 5], ["Proie", 2], 0, ["Prédateur", 5], 0])
         for element in range(len(config[ligne])): # Pour chaque élément (ex : ["Proie", 5])
             if config[ligne][element] != 0 and config[ligne][element][0] == "Proie": # Seulement si c'est une proie
-                if config[ligne] != N:
+                if config[N] != config[ligne]:
                     if config[ligne+1][element-1] == 0:
                         config_ligne_plus_un_element_moins_un = True
                     else:
@@ -133,7 +133,7 @@ def passer_tour():
                     config_ligne_plus_un_element_moins_un = False
                     config_ligne_plus_un_element = False
                     config_ligne_plus_un_element_plus_un = False
-                if config[ligne] != N-N: # égal à 0
+                if config[0] != config[ligne]: # égal à 0
                     if config[ligne-1][element-1] == 0:
                         config_ligne_moins_un_element_moins_un = True
                     else:
@@ -150,14 +150,14 @@ def passer_tour():
                     config_ligne_moins_un_element_moins_un = False
                     config_ligne_moins_un_element = False
                     config_ligne_moins_un_element_plus_un = False
-                if config[element] == N-N:
+                if config[0] != config[element]:
                     if config[ligne][element-1] == 0:
                         config_ligne_element_moins_un = True
                     else:
                         config_ligne_element_moins_un = False
                 else:
                     config_ligne_element_moins_un = False
-                if config[element] == N:
+                if config[N] != config[element]:
                     if config[ligne][element+1] == 0:
                         config_ligne_element_plus_un = True
                     else:
