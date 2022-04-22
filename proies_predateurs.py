@@ -14,7 +14,7 @@ import random as rd
 
 ### Définitions des constantes
 
-N = 50 # Taille de la matrice
+N = 30 # Taille de la matrice
 HAUTEUR = 700 # Hauteur du canevas
 LARGEUR = 700 # Largeur du canevas
 LARGEUR_CASE = LARGEUR / 1.1 // N # Largeur des cases
@@ -112,6 +112,17 @@ def passer_tour():
             cpt -= 1
         else: # Si la case n'est pas vide
             continue # Recommencer la boucle
+    # Déplacement des proies
+    for ligne in range(len(config)): # Pour chaque ligne (ex : [0, 0, ["Proie", 5], ["Proie", 2], 0, ["Prédateur", 5], 0])
+        for element in range(len(config[ligne])): # Pour chaque élément (ex : ["Proie", 5])
+            if config[ligne][element] != 0 and config[ligne][element][0] == "Proie": # Seulement si c'est une proie
+                print(config)
+                if config[ligne-1][element] == 0:
+                    config[ligne-1][element] = config[ligne][element]
+                    config[ligne][element] = 0
+                    print(config)
+                
+    
     affiche_grille(config)
     tour += 1
     label_tours.configure(text = ("Tour", tour)) # Actualise le texte du numéro de tour
