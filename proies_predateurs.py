@@ -14,7 +14,7 @@ import random as rd
 
 ### Définitions des constantes
 
-N = 10 # Taille de la matrice
+N = 50 # Taille de la matrice
 HAUTEUR = 700 # Hauteur du canevas
 LARGEUR = 700 # Largeur du canevas
 LARGEUR_CASE = LARGEUR / 1.1 // N # Largeur des cases
@@ -29,9 +29,9 @@ FLAIR = 5 # Distance maximale à laquelle un prédateur peut sentir un proie
 
 tour = 0 # Numéro du tour
 
-Npro = 1 # Nombre initial de proies (Npro proies apparaissent au début)
-Fpro = 0 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour)
-Apro = 150 # Espérance de vie des proies en nombre de tours
+Npro = 10 # Nombre initial de proies (Npro proies apparaissent au début)
+Fpro = 3 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour)
+Apro = 5 # Espérance de vie des proies en nombre de tours
 Npre = 2 # Nombre initial de prédateurs (Npre prédateurs apparaissent au début)
 Apre = 15 # Espérance de vie des prédateurs en nombre de tours
 Epre = 12 # Énergie des prédateurs (baisse de 1 par tour, s'il elle atteint zéro, le prédateur meurt de faim)
@@ -58,8 +58,18 @@ def choix_couleur(n):
 def init_grille():
     """Retourne une grille carrée vide dimension N+2, les éléments de la configuration vont de 1 à N les indices 0 et N+1 sont les bords et permettent de ne pas gérer de cas particuliers"""
     global grille, config
-    grille = [[0 for i in range(N + 2)] for j in range(N + 2)]
-    config = [[0 for i in range(N + 2)] for j in range(N + 2)]
+    grille = [[0 for i in range(N + 2)] for j in range(N + 2)] # Création de la matrice de taille N + 2 pour les bords
+    grille[0] = ["#" for i in range(N + 2)] # Ajout de "#" sur le bord gauche (invisible)
+    grille[-1] = ["#" for i in range(N + 2)] # Ajout de "#" sur le bord droit (invisible)
+    for i in range(1, N + 1): # Ajout de "#" en haut et en bas de chaque colonne
+        grille[i][0] = "#"
+        grille[i][-1] = "#"
+    config = [[0 for i in range(N + 2)] for j in range(N + 2)] # Création de la matrice de taille N + 2 pour les bords
+    config[0] = ["#" for i in range(N + 2)] # Ajout de "#" sur le bord gauche (invisible)
+    config[-1] = ["#" for i in range(N + 2)] # Ajout de "#" sur le bord droit (invisible)
+    for i in range(1, N + 1): # Ajout de "#" en haut et en bas de chaque colonne
+        config[i][0] = "#"
+        config[i][-1] = "#"
     for i in range(1, N + 1):
         x = (i - 1) * LARGEUR_CASE
         for j in range(1, N + 1):
@@ -93,16 +103,18 @@ def init_proies():
 
 # Passe un tour
 def passer_tour():
-    """Fait passer les tours (ajout de proies, modification de l'âge, ...)"""
+    """Fait passer les tours (ajout de proies, modification de l'âge, déplacement des proies, ...)"""
     global config
     global tour
+
     # Modification de l'espérance de vie (retirer 1 à chaque tour)
-    for ligne in range(len(config)): # Pour chaque ligne (ex : [0, 0, ["Proie", 5], ["Proie", 2], 0, ["Prédateur", 5], 0])
-        for element in range(len(config[ligne])): # Pour chaque élément (ex : ["Proie", 5])
-            if config[ligne][element] != 0: # Seulement si c'est pas un 0
-                config[ligne][element][1] -= 1 # Retirer 1 à l'espérance de vie (ex : ["Proie", 5] devient ["Proie", 4])
-                if config[ligne][element][1] == 0: # Si c'est par exemple [Proie, 0]
-                    config[ligne][element] = 0 # Remplacer par 0 (mort de l'animal)
+    for i in range(1, N + 1): # Pour chaque ligne (ex : [0, 0, ["Proie", 5], ["Proie", 2], 0, ["Prédateur", 5], 0])
+        for j in range(1, N + 1): # Pour chaque élément (ex : ["Proie", 5])
+            if type(config[i][j]) == list : # Seulement si c'est une liste (pas un 0 ou un #)
+                config[i][j][1] -= 1 # Retirer 1 à l'espérance de vie (ex : ["Proie", 5] devient ["Proie", 4])
+                if config[i][j][1] == 0: # Si c'est par exemple [Proie, 0]
+                    config[i][j] = 0 # Remplacer par 0 (mort de l'animal)
+
     # Ajout de proies
     cpt = Fpro # Compteur égal à Fpro, la fréquence de naissance des proies
     while cpt > 0:
@@ -112,99 +124,61 @@ def passer_tour():
             cpt -= 1
         else: # Si la case n'est pas vide
             continue # Recommencer la boucle
+
     # Déplacement des proies
-    for ligne in range(len(config)): # Pour chaque ligne (ex : [0, 0, ["Proie", 5], ["Proie", 2], 0, ["Prédateur", 5], 0])
-        for element in range(len(config[ligne])): # Pour chaque élément (ex : ["Proie", 5])
-            if config[ligne][element] != 0 and config[ligne][element][0] == "Proie": # Seulement si c'est une proie
-                if config[N] != config[ligne]:
-                    if config[ligne+1][element-1] == 0:
-                        config_ligne_plus_un_element_moins_un = True
-                    else:
-                        config_ligne_plus_un_element_moins_un = False
-                    if config[ligne+1][element] == 0:
-                        config_ligne_plus_un_element = True
-                    else:
-                        config_ligne_plus_un_element = False
-                    if config[ligne+1][element+1] == 0:
-                        config_ligne_plus_un_element_plus_un = True
-                    else:
-                        config_ligne_plus_un_element_plus_un = False
-                else:
-                    config_ligne_plus_un_element_moins_un = False
-                    config_ligne_plus_un_element = False
-                    config_ligne_plus_un_element_plus_un = False
-                if config[0] != config[ligne]: # égal à 0
-                    if config[ligne-1][element-1] == 0:
-                        config_ligne_moins_un_element_moins_un = True
-                    else:
-                        config_ligne_moins_un_element_moins_un = False
-                    if config[ligne-1][element] == 0:
-                        config_ligne_moins_un_element = True
-                    else:
-                        config_ligne_moins_un_element = False
-                    if config[ligne-1][element+1] == 0:
-                        config_ligne_moins_un_element_plus_un = True
-                    else:
-                        config_ligne_moins_un_element_plus_un = False
-                else:
-                    config_ligne_moins_un_element_moins_un = False
-                    config_ligne_moins_un_element = False
-                    config_ligne_moins_un_element_plus_un = False
-                if config[0] != config[element]:
-                    if config[ligne][element-1] == 0:
-                        config_ligne_element_moins_un = True
-                    else:
-                        config_ligne_element_moins_un = False
-                else:
-                    config_ligne_element_moins_un = False
-                if config[N] != config[element]:
-                    if config[ligne][element+1] == 0:
-                        config_ligne_element_plus_un = True
-                    else:
-                        config_ligne_element_plus_un = False
-                else:
-                    config_ligne_element_plus_un = False
-                deplacement = True
-                while deplacement == True:
-                    x = rd.randint(1,8)
-                    if config_ligne_moins_un_element_moins_un == True and x == 1:
-                        config[ligne-1][element-1] = config[ligne][element]
-                        config[ligne][element] = 0
-                        deplacement = False
-                    elif config_ligne_moins_un_element == True and x == 2:
-                        config[ligne-1][element] = config[ligne][element]
-                        config[ligne][element] = 0
-                        deplacement = False
-                    elif config_ligne_moins_un_element_plus_un == True and x == 3:
-                        config[ligne-1][element+1] = config[ligne][element]
-                        config[ligne][element] = 0
-                        deplacement = False
-                    elif config_ligne_element_moins_un == True and x == 4:
-                        config[ligne][element-1] = config[ligne][element]
-                        config[ligne][element] = 0
-                        deplacement = False
-                    elif config_ligne_element_plus_un == True and x == 5:
-                        config[ligne][element+1] = config[ligne][element]
-                        config[ligne][element] = 0
-                        deplacement = False
-                    elif config_ligne_plus_un_element_moins_un == True and x == 6:
-                        config[ligne+1][element-1] = config[ligne][element]
-                        config[ligne][element] = 0
-                        deplacement = False
-                    elif config_ligne_plus_un_element == True and x == 7:
-                        config[ligne+1][element] = config[ligne][element]
-                        config[ligne][element] = 0
-                        deplacement = False
-                    elif config_ligne_plus_un_element_plus_un == True and x == 8:
-                        config[ligne+1][element+1] = config[ligne][element]
-                        config[ligne][element] = 0
-                        deplacement = False
-                    else:
-                        continue
-                
-    
-    affiche_grille(config)
-    tour += 1
+    for i in range(1, N + 1):
+        for j in range(1, N + 1):
+            if type(config[i][j]) == list and config[i][j][0] == "Proie" and config[i][j][-1] != "Déplacé" : # Seulement si c'est une proie et qu'elle n'a pas déjà effectué un déplacement pendant ce tour
+                deplacement = False # Variable pour arrêter la boucle quand le déplacement est effectué
+                while deplacement == False:
+                    n = rd.randint(1,8) # Génération d'un chiffre aléatoire entre 1 et 8 pour choisir la direction aléatoirement
+                    if n == 1 and config[i-1][j-1] == 0: # Si le chiffre aléatoire est 1, on choisit la 1ère direction (en haut à gauche de la proie) si la case est vide
+                        config[i-1][j-1] = config[i][j][:] # Copie de la liste sur la nouvelle position
+                        config[i][j] = 0 # Suppression de la liste sur l'ancienne position
+                        config[i-1][j-1].append("Déplacé") # Ajout du terme "Déplacé" à la fin de la liste pour éviter de déplacer la même proie 2 fois de suite
+                        deplacement = True # Variable pour arrêter la boucle
+                    elif n == 2 and config[i-1][j] == 0:
+                        config[i-1][j] = config[i][j][:]
+                        config[i][j] = 0
+                        config[i-1][j].append("Déplacé")
+                        deplacement = True
+                    elif n == 3 and config[i-1][j+1] == 0:
+                        config[i-1][j+1] = config[i][j][:]
+                        config[i][j] = 0
+                        config[i-1][j+1].append("Déplacé")
+                        deplacement = True
+                    elif n == 4 and config[i][j-1] == 0:
+                        config[i][j-1] = config[i][j][:]
+                        config[i][j] = 0
+                        config[i][j-1].append("Déplacé")
+                        deplacement = True
+                    elif n == 5 and config[i][j+1] == 0:
+                        config[i][j+1] = config[i][j][:]
+                        config[i][j] = 0
+                        config[i][j+1].append("Déplacé")
+                        deplacement = True
+                    elif n == 6 and config[i+1][j-1] == 0:
+                        config[i+1][j-1] = config[i][j][:]
+                        config[i][j] = 0
+                        config[i+1][j-1].append("Déplacé")
+                        deplacement = True
+                    elif n == 7 and config[i+1][j] == 0:
+                        config[i+1][j] = config[i][j][:]
+                        config[i][j] = 0
+                        config[i+1][j].append("Déplacé")
+                        deplacement = True
+                    elif n == 8 and config[i+1][j+1]:
+                        config[i+1][j+1] = config[i][j][:]
+                        config[i][j] = 0
+                        config[i+1][j+1].append("Déplacé")
+                        deplacement = True
+    for i in range(1, N + 1): # Boucle pour supprimer le terme "Déplacé" à la fin de chaque liste une fois que tous les déplacement de ce tour on été effectués
+        for j in range(1, N + 1):
+            if type(config[i][j]) == list and config[i][j][-1] == "Déplacé": # Seulement si c'est une liste (donc un animal) et qu'elle a le terme "Déplacé" à la fin
+                del config[i][j][-1]
+
+    affiche_grille(config) # Actualisation de la grille
+    tour += 1 # Ajout d'un tour au compteur
     label_tours.configure(text = ("Tour", tour)) # Actualise le texte du numéro de tour
 
 
