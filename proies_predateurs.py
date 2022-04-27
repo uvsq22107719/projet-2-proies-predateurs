@@ -14,7 +14,7 @@ import random as rd
 
 ### Définitions des constantes
 
-N = 50 # Taille de la matrice
+N = 10 # Taille de la matrice
 HAUTEUR = 700 # Hauteur du canevas
 LARGEUR = 700 # Largeur du canevas
 LARGEUR_CASE = LARGEUR / 1.1 // N # Largeur des cases
@@ -167,7 +167,7 @@ def passer_tour():
                         config[i][j] = 0
                         config[i+1][j].append("Déplacé")
                         deplacement = True
-                    elif n == 8 and config[i+1][j+1]:
+                    elif n == 8 and config[i+1][j+1] == 0:
                         config[i+1][j+1] = config[i][j][:]
                         config[i][j] = 0
                         config[i+1][j+1].append("Déplacé")
@@ -175,6 +175,58 @@ def passer_tour():
     for i in range(1, N + 1): # Boucle pour supprimer le terme "Déplacé" à la fin de chaque liste une fois que tous les déplacement de ce tour on été effectués
         for j in range(1, N + 1):
             if type(config[i][j]) == list and config[i][j][-1] == "Déplacé": # Seulement si c'est une liste (donc un animal) et qu'elle a le terme "Déplacé" à la fin
+                del config[i][j][-1]
+
+    # Reproduction des proies
+    for i in range(1, N + 1):
+        for j in range(1, N + 1):
+            if type(config[i][j]) == list and config[i][j][0] == "Proie" and config[i][j][-1] != "Reproduit" : # Seulement si c'est une proie et qu'elle ne s'est pas déjà reproduite pendant ce tour
+                reproduction = False # Variable pour arrêter la boucle quand le déplacement est effectué
+                while reproduction == False:
+                    n = rd.randint(1,8) # Génération d'un chiffre aléatoire entre 1 et 8 pour choisir la direction aléatoirement
+                    if config[i-1][j-1][0] == "Proie": # Si le chiffre aléatoire est 1, on choisit la 1ère direction (en haut à gauche de la proie) si la case est vide
+
+                        config[i][j].append("Reproduit") # Ajout du terme "Reproduit" à la fin de la liste pour éviter que la même proie se reproduise 2 fois dans le même tour
+                        config[i-1][j-1].append("Reproduit") # Ajout du terme "Reproduit" à la fin de la liste pour éviter que la même proie se reproduise 2 fois dans le même tour
+                        reproduction = True # Variable pour arrêter la boucle
+                    elif config[i-1][j][0] == "Proie":
+
+                        config[i][j].append("Reproduit")
+                        config[i-1][j].append("Reproduit")
+                        reproduction = True
+                    elif config[i-1][j+1][0] == "Proie":
+
+                        config[i][j].append("Reproduit")
+                        config[i-1][j+1].append("Reproduit")
+                        reproduction = True
+                    elif config[i][j-1][0] == "Proie":
+
+                        config[i][j].append("Reproduit")
+                        config[i][j-1].append("Reproduit")
+                        reproduction = True
+                    elif config[i][j+1][0] == "Proie":
+
+                        config[i][j].append("Reproduit")
+                        config[i][j+1].append("Reproduit")
+                        reproduction = True
+                    elif config[i+1][j-1][0] == "Proie":
+
+                        config[i][j].append("Reproduit")
+                        config[i+1][j-1].append("Reproduit")
+                        reproduction = True
+                    elif config[i+1][j][0] == "Proie":
+
+                        config[i][j].append("Reproduit")
+                        config[i+1][j].append("Reproduit")
+                        reproduction = True
+                    elif config[i+1][j+1][0] == "Proie":
+
+                        config[i][j].append("Reproduit")
+                        config[i+1][j+1].append("Reproduit")
+                        reproduction = True
+    for i in range(1, N + 1): # Boucle pour supprimer le terme "Reproduit" à la fin de chaque liste une fois que tous les déplacement de ce tour on été effectués
+        for j in range(1, N + 1):
+            if type(config[i][j]) == list and config[i][j][-1] == "Reproduit": # Seulement si c'est une liste (donc un animal) et qu'elle a le terme "Reproduit" à la fin
                 del config[i][j][-1]
 
     affiche_grille(config) # Actualisation de la grille
