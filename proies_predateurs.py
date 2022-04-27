@@ -114,18 +114,13 @@ def init_prédateurs():
     affiche_grille(config)
 
 
+# Retourne une case adjacente aléatoire selon la condition demandée
 def direction(i, j, n):
-    case_1 = False
-    case_2 = False
-    case_3 = False
-    case_4 = False
-    case_5 = False
-    case_6 = False
-    case_7 = False
-    case_8 = False
-    if not type(config[i-1][j-1]) == list and config[i-1][j-1] == n:
-        case_1 = True
-    if not type(config[i-1][j-1]) == list and config[i-1][j] == n:
+    """Retourne une case adjacente aléatoire ayant pour condition n (par exemple 0 ou Proie)"""
+    case_1, case_2, case_3, case_4, case_5, case_6, case_7, case_8 = False, False, False, False, False, False, False, False # Création des variables pour chaque case (False = indisponible, True = disponible)
+    if not type(config[i-1][j-1]) == list and config[i-1][j-1] == n: # Si ce n'est pas une liste et que c'est égal à n
+        case_1 = True # La case est disponible
+    if not type(config[i-1][j-1]) == list and config[i-1][j] == n: # Idem pour les 8 directions possibles
         case_2 = True
     if not type(config[i-1][j+1]) == list and config[i-1][j+1] == n:
         case_3 = True
@@ -140,7 +135,7 @@ def direction(i, j, n):
     if not type(config[i+1][j+1]) == list and config[i+1][j+1] == n:
         case_8 = True
 
-    if type(config[i-1][j-1]) == list and config[i-1][j-1][0] == n:
+    if type(config[i-1][j-1]) == list and config[i-1][j-1][0] == n: # Si c'est une liste et que le premier terme est n (par exemple "Proie")
         case_1 = True
     if type(config[i-1][j]) == list and config[i-1][j][0] == n:
         case_2 = True
@@ -156,17 +151,16 @@ def direction(i, j, n):
         case_7 = True
     if type(config[i+1][j+1]) == list and config[i+1][j+1][0] == n:
         case_8 = True
-    print(case_1, case_2, case_3, case_4, case_5, case_6, case_7, case_8)
     if case_1 == False and case_2 == False and case_3 == False and case_4 == False and case_5 == False and case_6 == False and case_7 == False and case_8 == False:
         case = 0
     else:
         t = True
         while t == True:
             x = rd.randint(1, 8) # Génération d'un chiffre aléatoire entre 1 et 8 pour choisir la direction aléatoirement
-            if case_1 == True and x == 1:
-                case = 1
-                t = False
-            elif case_2 == True and x == 2:
+            if case_1 == True and x == 1: # Si la case 1 est disponible et que le chiffre aléatoire est 1
+                case = 1 # On retourne une valeur de 1
+                t = False # Variable pour arrêter la boucle
+            elif case_2 == True and x == 2: # Idem pour les 8 cases possibles
                 case = 2
                 t = False
             elif case_3 == True and x == 3:
@@ -187,7 +181,7 @@ def direction(i, j, n):
             elif case_8 == True and x == 8:
                 case = 8
                 t = False
-    return case
+    return case # Retourner la valeur de case (comprise entre 0 et 8 inclus)
 
 
 # Passe un tour
@@ -218,49 +212,41 @@ def passer_tour():
     for i in range(1, N + 1):
         for j in range(1, N + 1):
             if type(config[i][j]) == list and config[i][j][0] == "Proie" and config[i][j][-1] != "Déplacé" : # Seulement si c'est une proie et qu'elle n'a pas déjà effectué un déplacement pendant ce tour
-                deplacement = False # Variable pour arrêter la boucle quand le déplacement est effectué
-                while deplacement == False:
-                    n = rd.randint(1,8) # Génération d'un chiffre aléatoire entre 1 et 8 pour choisir la direction aléatoirement
-                    if n == 1 and config[i-1][j-1] == 0: # Si le chiffre aléatoire est 1, on choisit la 1ère direction (en haut à gauche de la proie) si la case est vide
-                        config[i-1][j-1] = config[i][j][:] # Copie de la liste sur la nouvelle position
-                        config[i][j] = 0 # Suppression de la liste sur l'ancienne position
-                        config[i-1][j-1].append("Déplacé") # Ajout du terme "Déplacé" à la fin de la liste pour éviter de déplacer la même proie 2 fois de suite
-                        deplacement = True # Variable pour arrêter la boucle
-                    elif n == 2 and config[i-1][j] == 0:
-                        config[i-1][j] = config[i][j][:]
-                        config[i][j] = 0
-                        config[i-1][j].append("Déplacé")
-                        deplacement = True
-                    elif n == 3 and config[i-1][j+1] == 0:
-                        config[i-1][j+1] = config[i][j][:]
-                        config[i][j] = 0
-                        config[i-1][j+1].append("Déplacé")
-                        deplacement = True
-                    elif n == 4 and config[i][j-1] == 0:
-                        config[i][j-1] = config[i][j][:]
-                        config[i][j] = 0
-                        config[i][j-1].append("Déplacé")
-                        deplacement = True
-                    elif n == 5 and config[i][j+1] == 0:
-                        config[i][j+1] = config[i][j][:]
-                        config[i][j] = 0
-                        config[i][j+1].append("Déplacé")
-                        deplacement = True
-                    elif n == 6 and config[i+1][j-1] == 0:
-                        config[i+1][j-1] = config[i][j][:]
-                        config[i][j] = 0
-                        config[i+1][j-1].append("Déplacé")
-                        deplacement = True
-                    elif n == 7 and config[i+1][j] == 0:
-                        config[i+1][j] = config[i][j][:]
-                        config[i][j] = 0
-                        config[i+1][j].append("Déplacé")
-                        deplacement = True
-                    elif n == 8 and config[i+1][j+1] == 0:
-                        config[i+1][j+1] = config[i][j][:]
-                        config[i][j] = 0
-                        config[i+1][j+1].append("Déplacé")
-                        deplacement = True
+                case = direction(i, j, 0)
+                if case == 0:
+                    break
+                elif case == 1:
+                    config[i-1][j-1] = config[i][j][:] # Copie de la liste sur la nouvelle position
+                    config[i][j] = 0 # Suppression de la liste sur l'ancienne position
+                    config[i-1][j-1].append("Déplacé") # Ajout du terme "Déplacé" à la fin de la liste pour éviter de déplacer la même proie 2 fois de suite
+                elif case == 2:
+                    config[i-1][j] = config[i][j][:]
+                    config[i][j] = 0
+                    config[i-1][j].append("Déplacé")
+                elif case == 3:
+                    config[i-1][j+1] = config[i][j][:]
+                    config[i][j] = 0
+                    config[i-1][j+1].append("Déplacé")
+                elif case == 4:
+                    config[i][j-1] = config[i][j][:]
+                    config[i][j] = 0
+                    config[i][j-1].append("Déplacé")
+                elif case == 5:
+                    config[i][j+1] = config[i][j][:]
+                    config[i][j] = 0
+                    config[i][j+1].append("Déplacé")
+                elif case == 6:
+                    config[i+1][j-1] = config[i][j][:]
+                    config[i][j] = 0
+                    config[i+1][j-1].append("Déplacé")
+                elif case == 7:
+                    config[i+1][j] = config[i][j][:]
+                    config[i][j] = 0
+                    config[i+1][j].append("Déplacé")
+                elif case == 8:
+                    config[i+1][j+1] = config[i][j][:]
+                    config[i][j] = 0
+                    config[i+1][j+1].append("Déplacé")
     for i in range(1, N + 1): # Boucle pour supprimer le terme "Déplacé" à la fin de chaque liste une fois que tous les déplacement de ce tour on été effectués
         for j in range(1, N + 1):
             if type(config[i][j]) == list and config[i][j][-1] == "Déplacé": # Seulement si c'est une liste (donc un animal) et qu'elle a le terme "Déplacé" à la fin
@@ -272,13 +258,13 @@ def passer_tour():
             if type(config[i][j]) == list and config[i][j][0] == "Proie" and config[i][j][-1] != "Reproduit" : # Seulement si c'est une proie et qu'elle ne s'est pas déjà reproduite pendant ce tour
                 case = direction(i, j, "Proie")
                 if case == 0:
-                    pass
+                    break
                 elif case == 1:
                     config[i][j].append("Reproduit")
                     config[i-1][j-1].append("Reproduit")
                     case = direction(i, j, 0)
                     if case == 0:
-                        pass
+                        break
                     elif case == 2:
                         config[i-1][j] = ["Proie", Apro]
                     elif case == 3:
