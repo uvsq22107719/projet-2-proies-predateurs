@@ -14,7 +14,7 @@ import random as rd
 
 ### Définitions des constantes
 
-N = 10 # Taille de la matrice
+N = 50 # Taille de la matrice
 HAUTEUR = 700 # Hauteur du canevas
 LARGEUR = 700 # Largeur du canevas
 LARGEUR_CASE = LARGEUR / 1.1 // N # Largeur des cases
@@ -29,7 +29,7 @@ FLAIR = 5 # Distance maximale à laquelle un prédateur peut sentir un proie
 
 tour = 0 # Numéro du tour
 
-Npro = 1 # Nombre initial de proies (Npro proies apparaissent au début)
+Npro = 10 # Nombre initial de proies (Npro proies apparaissent au début)
 Fpro = 3 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour)
 Apro = 5 # Espérance de vie des proies en nombre de tours
 Npre = 2 # Nombre initial de prédateurs (Npre prédateurs apparaissent au début)
@@ -156,38 +156,39 @@ def direction(i, j, n):
         case_7 = True
     if type(config[i+1][j+1]) == list and config[i+1][j+1][0] == n:
         case_8 = True
-    t = True
-    while t == True:
-        x = rd.randint(1, 8) # Génération d'un chiffre aléatoire entre 1 et 8 pour choisir la direction aléatoirement
-        if case_1 == True and x == 1:
-            case = 1
-            t = False
-        elif case_2 == True and x == 2:
-            case = 2
-            t = False
-        elif case_3 == True and x == 3:
-            case = 3
-            t = False
-        elif case_4 == True and x == 4:
-            case = 4
-            t = False
-        elif case_5 == True and x == 5:
-            case = 5
-            t = False
-        elif case_6 == True and x == 6:
-            case = 6
-            t = False
-        elif case_7 == True and x == 7:
-            case = 7
-            t = False
-        elif case_8 == True and x == 8:
-            case = 8
-            t = False
+    print(case_1, case_2, case_3, case_4, case_5, case_6, case_7, case_8)
+    if case_1 == False and case_2 == False and case_3 == False and case_4 == False and case_5 == False and case_6 == False and case_7 == False and case_8 == False:
+        case = 0
+    else:
+        t = True
+        while t == True:
+            x = rd.randint(1, 8) # Génération d'un chiffre aléatoire entre 1 et 8 pour choisir la direction aléatoirement
+            if case_1 == True and x == 1:
+                case = 1
+                t = False
+            elif case_2 == True and x == 2:
+                case = 2
+                t = False
+            elif case_3 == True and x == 3:
+                case = 3
+                t = False
+            elif case_4 == True and x == 4:
+                case = 4
+                t = False
+            elif case_5 == True and x == 5:
+                case = 5
+                t = False
+            elif case_6 == True and x == 6:
+                case = 6
+                t = False
+            elif case_7 == True and x == 7:
+                case = 7
+                t = False
+            elif case_8 == True and x == 8:
+                case = 8
+                t = False
     return case
 
-
-
-                        
 
 # Passe un tour
 def passer_tour():
@@ -270,149 +271,167 @@ def passer_tour():
         for j in range(1, N + 1):
             if type(config[i][j]) == list and config[i][j][0] == "Proie" and config[i][j][-1] != "Reproduit" : # Seulement si c'est une proie et qu'elle ne s'est pas déjà reproduite pendant ce tour
                 case = direction(i, j, "Proie")
-                if case == 1:
+                if case == 0:
+                    pass
+                elif case == 1:
                     config[i][j].append("Reproduit")
                     config[i-1][j-1].append("Reproduit")
                     case = direction(i, j, 0)
-                    if case == 2:
+                    if case == 0:
+                        pass
+                    elif case == 2:
                         config[i-1][j] = ["Proie", Apro]
-                    if case == 3:
+                    elif case == 3:
                         config[i-1][j+1] = ["Proie", Apro]
-                    if case == 4:
+                    elif case == 4:
                         config[i][j-1] = ["Proie", Apro]
-                    if case == 5:
+                    elif case == 5:
                         config[i][j+1] = ["Proie", Apro]
-                    if case == 6:
+                    elif case == 6:
                         config[i+1][j-1] = ["Proie", Apro]
-                    if case == 7:
+                    elif case == 7:
                         config[i+1][j] = ["Proie", Apro]
-                    if case == 8:
+                    elif case == 8:
                         config[i+1][j+1] = ["Proie", Apro]
                 elif case == 2:
                     config[i][j].append("Reproduit")
                     config[i-1][j].append("Reproduit")
                     case = direction(i, j, 0)
-                    if case == 1:
+                    if case == 0:
+                        pass
+                    elif case == 1:
                         config[i-1][j-1] = ["Proie", Apro]
-                    if case == 3:
+                    elif case == 3:
                         config[i-1][j+1] = ["Proie", Apro]
-                    if case == 4:
+                    elif case == 4:
                         config[i][j-1] = ["Proie", Apro]
-                    if case == 5:
+                    elif case == 5:
                         config[i][j+1] = ["Proie", Apro]
-                    if case == 6:
+                    elif case == 6:
                         config[i+1][j-1] = ["Proie", Apro]
-                    if case == 7:
+                    elif case == 7:
                         config[i+1][j] = ["Proie", Apro]
-                    if case == 8:
+                    elif case == 8:
                         config[i+1][j+1] = ["Proie", Apro]
                 elif case == 3:
                     config[i][j].append("Reproduit")
                     config[i-1][j+1].append("Reproduit")
                     case = direction(i, j, 0)
-                    if case == 1:
+                    if case == 0:
+                        pass
+                    elif case == 1:
                         config[i-1][j-1] = ["Proie", Apro]
-                    if case == 2:
+                    elif case == 2:
                         config[i-1][j] = ["Proie", Apro]
-                    if case == 4:
+                    elif case == 4:
                         config[i][j-1] = ["Proie", Apro]
-                    if case == 5:
+                    elif case == 5:
                         config[i][j+1] = ["Proie", Apro]
-                    if case == 6:
+                    elif case == 6:
                         config[i+1][j-1] = ["Proie", Apro]
-                    if case == 7:
+                    elif case == 7:
                         config[i+1][j] = ["Proie", Apro]
-                    if case == 8:
+                    elif case == 8:
                         config[i+1][j+1] = ["Proie", Apro]
                 elif case == 4:
                     config[i][j].append("Reproduit")
                     config[i][j-1].append("Reproduit")
                     case = direction(i, j, 0)
-                    if case == 1:
+                    if case == 0:
+                        pass
+                    elif case == 1:
                         config[i-1][j-1] = ["Proie", Apro]
-                    if case == 2:
+                    elif case == 2:
                         config[i-1][j] = ["Proie", Apro]
-                    if case == 3:
+                    elif case == 3:
                         config[i-1][j+1] = ["Proie", Apro]
-                    if case == 5:
+                    elif case == 5:
                         config[i][j+1] = ["Proie", Apro]
-                    if case == 6:
+                    elif case == 6:
                         config[i+1][j-1] = ["Proie", Apro]
-                    if case == 7:
+                    elif case == 7:
                         config[i+1][j] = ["Proie", Apro]
-                    if case == 8:
+                    elif case == 8:
                         config[i+1][j+1] = ["Proie", Apro]
                 elif case == 5:
                     config[i][j].append("Reproduit")
                     config[i][j+1].append("Reproduit")
                     case = direction(i, j, 0)
-                    if case == 1:
+                    if case == 0:
+                        pass
+                    elif case == 1:
                         config[i-1][j-1] = ["Proie", Apro]
-                    if case == 2:
+                    elif case == 2:
                         config[i-1][j] = ["Proie", Apro]
-                    if case == 3:
+                    elif case == 3:
                         config[i-1][j+1] = ["Proie", Apro]
-                    if case == 4:
+                    elif case == 4:
                         config[i][j-1] = ["Proie", Apro]
-                    if case == 6:
+                    elif case == 6:
                         config[i+1][j-1] = ["Proie", Apro]
-                    if case == 7:
+                    elif case == 7:
                         config[i+1][j] = ["Proie", Apro]
-                    if case == 8:
+                    elif case == 8:
                         config[i+1][j+1] = ["Proie", Apro]
                 elif case == 6:
                     config[i][j].append("Reproduit")
                     config[i+1][j-1].append("Reproduit")
                     case = direction(i, j, 0)
-                    if case == 1:
+                    if case == 0:
+                        pass
+                    elif case == 1:
                         config[i-1][j-1] = ["Proie", Apro]
-                    if case == 2:
+                    elif case == 2:
                         config[i-1][j] = ["Proie", Apro]
-                    if case == 3:
+                    elif case == 3:
                         config[i-1][j+1] = ["Proie", Apro]
-                    if case == 4:
+                    elif case == 4:
                         config[i][j-1] = ["Proie", Apro]
-                    if case == 5:
+                    elif case == 5:
                         config[i][j+1] = ["Proie", Apro]
-                    if case == 7:
+                    elif case == 7:
                         config[i+1][j] = ["Proie", Apro]
-                    if case == 8:
+                    elif case == 8:
                         config[i+1][j+1] = ["Proie", Apro]
                 elif case == 7:
                     config[i][j].append("Reproduit")
                     config[i+1][j].append("Reproduit")
                     case = direction(i, j, 0)
-                    if case == 1:
+                    if case == 0:
+                        pass
+                    elif case == 1:
                         config[i-1][j-1] = ["Proie", Apro]
-                    if case == 2:
+                    elif case == 2:
                         config[i-1][j] = ["Proie", Apro]
-                    if case == 3:
+                    elif case == 3:
                         config[i-1][j+1] = ["Proie", Apro]
-                    if case == 4:
+                    elif case == 4:
                         config[i][j-1] = ["Proie", Apro]
-                    if case == 5:
+                    elif case == 5:
                         config[i][j+1] = ["Proie", Apro]
-                    if case == 6:
+                    elif case == 6:
                         config[i+1][j-1] = ["Proie", Apro]
-                    if case == 8:
+                    elif case == 8:
                         config[i+1][j+1] = ["Proie", Apro]
                 elif case == 8:
                     config[i][j].append("Reproduit")
                     config[i+1][j+1].append("Reproduit")
                     case = direction(i, j, 0)
-                    if case == 1:
+                    if case == 0:
+                        pass
+                    elif case == 1:
                         config[i-1][j-1] = ["Proie", Apro]
-                    if case == 2:
+                    elif case == 2:
                         config[i-1][j] = ["Proie", Apro]
-                    if case == 3:
+                    elif case == 3:
                         config[i-1][j+1] = ["Proie", Apro]
-                    if case == 4:
+                    elif case == 4:
                         config[i][j-1] = ["Proie", Apro]
-                    if case == 5:
+                    elif case == 5:
                         config[i][j+1] = ["Proie", Apro]
-                    if case == 6:
+                    elif case == 6:
                         config[i+1][j-1] = ["Proie", Apro]
-                    if case == 7:
+                    elif case == 7:
                         config[i+1][j] = ["Proie", Apro]
     for i in range(1, N + 1): # Boucle pour supprimer le terme "Reproduit" à la fin de chaque liste une fois que tous les déplacement de ce tour on été effectués
         for j in range(1, N + 1):
