@@ -213,9 +213,9 @@ def passer_tour():
         for j in range(1, N + 1):
             if type(config[i][j]) == list and config[i][j][0] == "Proie" and config[i][j][-1] != "Déplacé" : # Seulement si c'est une proie et qu'elle n'a pas déjà effectué un déplacement pendant ce tour
                 case = direction(i, j, 0)
-                if case == 0:
-                    break
-                elif case == 1:
+                if case == 0: # Si aucune case adjacente n'est vide
+                    break # Arrêter la boucle
+                elif case == 1: # Si la case 1 est libre
                     config[i-1][j-1] = config[i][j][:] # Copie de la liste sur la nouvelle position
                     config[i][j] = 0 # Suppression de la liste sur l'ancienne position
                     config[i-1][j-1].append("Déplacé") # Ajout du terme "Déplacé" à la fin de la liste pour éviter de déplacer la même proie 2 fois de suite
@@ -247,26 +247,27 @@ def passer_tour():
                     config[i+1][j+1] = config[i][j][:]
                     config[i][j] = 0
                     config[i+1][j+1].append("Déplacé")
+
     for i in range(1, N + 1): # Boucle pour supprimer le terme "Déplacé" à la fin de chaque liste une fois que tous les déplacement de ce tour on été effectués
         for j in range(1, N + 1):
             if type(config[i][j]) == list and config[i][j][-1] == "Déplacé": # Seulement si c'est une liste (donc un animal) et qu'elle a le terme "Déplacé" à la fin
-                del config[i][j][-1]
+                del config[i][j][-1] # Supprimer le dernier terme de la liste ("Déplacé")
 
     # Reproduction des proies
     for i in range(1, N + 1):
         for j in range(1, N + 1):
             if type(config[i][j]) == list and config[i][j][0] == "Proie" and config[i][j][-1] != "Reproduit" : # Seulement si c'est une proie et qu'elle ne s'est pas déjà reproduite pendant ce tour
                 case = direction(i, j, "Proie")
-                if case == 0:
-                    break
-                elif case == 1:
-                    config[i][j].append("Reproduit")
+                if case == 0: # Si aucune case adjacente n'a de proie
+                    break # Annuler la boucle
+                elif case == 1: # Si la case 1 est une proie
+                    config[i][j].append("Reproduit") # Ajout du terme "Reproduit" à la fin de la liste pour éviter que les proies se reproduisent plusieurs fois par tour
                     config[i-1][j-1].append("Reproduit")
                     case = direction(i, j, 0)
-                    if case == 0:
-                        break
-                    elif case == 2:
-                        config[i-1][j] = ["Proie", Apro]
+                    if case == 0: # Si aucune case n'est vide (pas de place pour une nouvelle proie)
+                        break # Annuler la boucle
+                    elif case == 2: # Si la case 2 est disponible
+                        config[i-1][j] = ["Proie", Apro] # Ajouter une proies avec une espérance de vie de Apro tours
                     elif case == 3:
                         config[i-1][j+1] = ["Proie", Apro]
                     elif case == 4:
@@ -419,10 +420,11 @@ def passer_tour():
                         config[i+1][j-1] = ["Proie", Apro]
                     elif case == 7:
                         config[i+1][j] = ["Proie", Apro]
-    for i in range(1, N + 1): # Boucle pour supprimer le terme "Reproduit" à la fin de chaque liste une fois que tous les déplacement de ce tour on été effectués
+
+    for i in range(1, N + 1): # Boucle pour supprimer le terme "Reproduit" à la fin de chaque liste une fois que toutes les proies qui le peuvent se sont reproduites pendant ce tour
         for j in range(1, N + 1):
             if type(config[i][j]) == list and config[i][j][-1] == "Reproduit": # Seulement si c'est une liste (donc un animal) et qu'elle a le terme "Reproduit" à la fin
-                del config[i][j][-1]
+                del config[i][j][-1] # Supprimer le dernier terme de la liste ("Reproduit")
 
     affiche_grille(config) # Actualisation de la grille
     tour += 1 # Ajout d'un tour au compteur
