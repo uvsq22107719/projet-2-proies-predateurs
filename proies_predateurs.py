@@ -27,12 +27,16 @@ FLAIR = 5 # Distance maximale à laquelle un prédateur peut sentir un proie
 
 ### Définitions des variables globales
 
+arret = True
+id_after = 0
+
 tour = 0 # Numéro du tour
 
-Npro = 10 # Nombre initial de proies (Npro proies apparaissent au début)
-Fpro = 3 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour)
+Npro = 40 # Nombre initial de proies (Npro proies apparaissent au début)
+Fpro = 0 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour) ### REMPLACÉE PAR LE SYSTEME DE REPRODUCTION. LAISSER UNE VALEUR DE 0
 Apro = 5 # Espérance de vie des proies en nombre de tours
-Npre = 2 # Nombre initial de prédateurs (Npre prédateurs apparaissent au début)
+
+Npre = 10 # Nombre initial de prédateurs (Npre prédateurs apparaissent au début)
 Apre = 15 # Espérance de vie des prédateurs en nombre de tours
 Epre = 12 # Énergie des prédateurs (baisse de 1 par tour, s'il elle atteint zéro, le prédateur meurt de faim)
 
@@ -109,7 +113,7 @@ def init_prédateurs():
     while cpt > 0:
         i, j = rd.randint(1, N), rd.randint(1, N) # Génération des coordonnées aléatoires
         if config[i][j] == 0: # Si c'est une case vide
-            config[i][j] = ["Prédateur", Apre] # Création d'une liste avec toutes les infos sur l'animal (ici c'est une Prédateur avec Apre le nombre de tours d'espérance de vie)
+            config[i][j] = ["Prédateur", Apre, Epre] # Création d'une liste avec toutes les infos sur l'animal (ici c'est un prédateur avec Apre le nombre de tours d'espérance de vie puis Epre l'énergie du prédateur)
             cpt -= 1
     affiche_grille(config)
 
@@ -155,47 +159,55 @@ def direction(i, j, n):
         case = 0
     else:
         t = True
-        while t == True:
+        while t:
             x = rd.randint(1, 8) # Génération d'un chiffre aléatoire entre 1 et 8 pour choisir la direction aléatoirement
-            if case_1 == True and x == 1: # Si la case 1 est disponible et que le chiffre aléatoire est 1
+            if case_1 and x == 1: # Si la case 1 est disponible et que le chiffre aléatoire est 1
                 case = 1 # On retourne une valeur de 1
                 t = False # Variable pour arrêter la boucle
-            elif case_2 == True and x == 2: # Idem pour les 8 cases possibles
+            elif case_2 and x == 2: # Idem pour les 8 cases possibles
                 case = 2
                 t = False
-            elif case_3 == True and x == 3:
+            elif case_3 and x == 3:
                 case = 3
                 t = False
-            elif case_4 == True and x == 4:
+            elif case_4 and x == 4:
                 case = 4
                 t = False
-            elif case_5 == True and x == 5:
+            elif case_5 and x == 5:
                 case = 5
                 t = False
-            elif case_6 == True and x == 6:
+            elif case_6 and x == 6:
                 case = 6
                 t = False
-            elif case_7 == True and x == 7:
+            elif case_7 and x == 7:
                 case = 7
                 t = False
-            elif case_8 == True and x == 8:
+            elif case_8 and x == 8:
                 case = 8
                 t = False
     return case # Retourner la valeur de case (comprise entre 0 et 8 inclus)
 
 
-# Passe un tour
-def passer_tour():
+# Tour suivant
+def tour_suivant():
     """Fait passer les tours (ajout de proies, modification de l'âge, déplacement des proies, ...)"""
     global config
     global tour
 
     # Modification de l'espérance de vie (retirer 1 à chaque tour)
-    for i in range(1, N + 1): # Pour chaque ligne (ex : [0, 0, ["Proie", 5], ["Proie", 2], 0, ["Prédateur", 5], 0])
-        for j in range(1, N + 1): # Pour chaque élément (ex : ["Proie", 5])
-            if type(config[i][j]) == list : # Seulement si c'est une liste (pas un 0 ou un #)
+    for i in range(1, N + 1): # Pour chaque liste (ex : [0, 0, ["Proie", 5], ["Proie", 2], 0, ["Prédateur", 15, 12], 0])
+        for j in range(1, N + 1): # Pour chaque élément dans la liste (ex : ["Proie", 5])
+            if type(config[i][j]) == list: # Seulement si c'est une liste (pas un 0 ou un #)
                 config[i][j][1] -= 1 # Retirer 1 à l'espérance de vie (ex : ["Proie", 5] devient ["Proie", 4])
                 if config[i][j][1] == 0: # Si c'est par exemple [Proie, 0]
+                    config[i][j] = 0 # Remplacer par 0 (mort de l'animal)
+
+    # Modification de l'énergie des prédateurs (retirer 1 à chaque tour)
+    for i in range(1, N + 1): # Pour chaque liste (ex : [0, 0, ["Proie", 5], ["Proie", 2], 0, ["Prédateur", 15, 12], 0])
+        for j in range(1, N + 1): # Pour chaque élément dans la liste (ex : ["Proie", 5])
+            if type(config[i][j]) == list and config[i][j][0] == "Prédateur": # Seulement si c'est un prédateur
+                config[i][j][2] -= 1 # Retirer 1 à l'espérance de vie (ex : ["Prédateur", 14, 12] devient ["Prédateur", 14, 11])
+                if config[i][j][2] == 0: # Si c'est par exemple ["Prédateur", 14, 0]
                     config[i][j] = 0 # Remplacer par 0 (mort de l'animal)
 
     # Ajout de proies
@@ -421,15 +433,137 @@ def passer_tour():
                     elif case == 7:
                         config[i+1][j] = ["Proie", Apro]
 
+    # Reproduction des prédateurs
+    for i in range(1, N + 1):
+        for j in range(1, N + 1):
+            if type(config[i][j]) == list and config[i][j][0] == "Prédateur" and config[i][j][-1] != "Reproduit" and config[i][j][2] >= Erepro: # Seulement si c'est un prédateur, qu'il ne s'est pas déjà reproduit pendant ce tour et que son niveau d'énergie est supérieur ou égal au niveau d'énergie Erepro nécessaire pour pouvoir se reproduire
+                config[i][j].append("Reproduit")
+                cpt_repro = 1
+                r = True
+                while r == True and cpt_repro != 0:
+                    i = rd.randint(1, N + 1)
+                    j = rd.randint(1, N + 1)
+                    if config[i][j] == 0:
+                        config[i][j] = ["Prédateur", Apro, Epre]
+                        cpt_repro -= 1
+                        r = False
+
     for i in range(1, N + 1): # Boucle pour supprimer le terme "Reproduit" à la fin de chaque liste une fois que toutes les proies qui le peuvent se sont reproduites pendant ce tour
         for j in range(1, N + 1):
             if type(config[i][j]) == list and config[i][j][-1] == "Reproduit": # Seulement si c'est une liste (donc un animal) et qu'elle a le terme "Reproduit" à la fin
                 del config[i][j][-1] # Supprimer le dernier terme de la liste ("Reproduit")
 
+    # Déplacement des prédateurs
+    for i in range(1, N + 1):
+        for j in range(1, N + 1):
+            if type(config[i][j]) == list and config[i][j][0] == "Prédateur" and config[i][j][-1] != "Déplacé" : # Seulement si c'est un prédateur et qu'il n'a pas déjà effectué un déplacement pendant ce tour
+                case = direction(i, j, "Proie")
+                if case == 0:
+                    case = direction(i, j, 0)
+                    if case == 0:
+                        break
+                    elif case == 1: # Si la case 1 a une proie
+                        config[i-1][j-1] = config[i][j][:] # Copie de la liste sur la nouvelle position
+                        config[i][j] = 0 # Suppression de la liste sur l'ancienne position
+                        config[i-1][j-1].append("Déplacé") # Ajout du terme "Déplacé" à la fin de la liste pour éviter de déplacer la même proie 2 fois de suite
+                    elif case == 2:
+                        config[i-1][j] = config[i][j][:]
+                        config[i][j] = 0
+                        config[i-1][j].append("Déplacé")
+                    elif case == 3:
+                        config[i-1][j+1] = config[i][j][:]
+                        config[i][j] = 0
+                        config[i-1][j+1].append("Déplacé")
+                    elif case == 4:
+                        config[i][j-1] = config[i][j][:]
+                        config[i][j] = 0
+                        config[i][j-1].append("Déplacé")
+                    elif case == 5:
+                        config[i][j+1] = config[i][j][:]
+                        config[i][j] = 0
+                        config[i][j+1].append("Déplacé")
+                    elif case == 6:
+                        config[i+1][j-1] = config[i][j][:]
+                        config[i][j] = 0
+                        config[i+1][j-1].append("Déplacé")
+                    elif case == 7:
+                        config[i+1][j] = config[i][j][:]
+                        config[i][j] = 0
+                        config[i+1][j].append("Déplacé")
+                    elif case == 8:
+                        config[i+1][j+1] = config[i][j][:]
+                        config[i][j] = 0
+                        config[i+1][j+1].append("Déplacé")
+                elif case == 1: # Si la case 1 a une proie
+                    config[i-1][j-1] = config[i][j][:] # Copie de la liste sur la nouvelle position
+                    config[i][j] = 0 # Suppression de la liste sur l'ancienne position
+                    config[i-1][j-1].append("Déplacé") # Ajout du terme "Déplacé" à la fin de la liste pour éviter de déplacer la même proie 2 fois de suite
+                    config[i-1][j-1][2] += MIAM # Ajout de MIAM énergie à l'énergie du prédateur
+                elif case == 2:
+                    config[i-1][j] = config[i][j][:]
+                    config[i][j] = 0
+                    config[i-1][j].append("Déplacé")
+                    config[i-1][j][2] += MIAM
+                elif case == 3:
+                    config[i-1][j+1] = config[i][j][:]
+                    config[i][j] = 0
+                    config[i-1][j+1].append("Déplacé")
+                    config[i-1][j+1][2] += MIAM
+                elif case == 4:
+                    config[i][j-1] = config[i][j][:]
+                    config[i][j] = 0
+                    config[i][j-1].append("Déplacé")
+                    config[i][j-1][2] += MIAM
+                elif case == 5:
+                    config[i][j+1] = config[i][j][:]
+                    config[i][j] = 0
+                    config[i][j+1].append("Déplacé")
+                    config[i][j+1][2] += MIAM
+                elif case == 6:
+                    config[i+1][j-1] = config[i][j][:]
+                    config[i][j] = 0
+                    config[i+1][j-1].append("Déplacé")
+                    config[i+1][j-1][2] += MIAM
+                elif case == 7:
+                    config[i+1][j] = config[i][j][:]
+                    config[i][j] = 0
+                    config[i+1][j].append("Déplacé")
+                    config[i+1][j][2] += MIAM
+                elif case == 8:
+                    config[i+1][j+1] = config[i][j][:]
+                    config[i][j] = 0
+                    config[i+1][j+1].append("Déplacé")
+                    config[i+1][j+1][2] += MIAM
+
+    for i in range(1, N + 1): # Boucle pour supprimer le terme "Déplacé" à la fin de chaque liste une fois que tous les déplacement de ce tour on été effectués
+        for j in range(1, N + 1):
+            if type(config[i][j]) == list and config[i][j][-1] == "Déplacé": # Seulement si c'est une liste (donc un animal) et qu'elle a le terme "Déplacé" à la fin
+                del config[i][j][-1] # Supprimer le dernier terme de la liste ("Déplacé")
+
     affiche_grille(config) # Actualisation de la grille
     tour += 1 # Ajout d'un tour au compteur
     label_tours.configure(text = ("Tour", tour)) # Actualise le texte du numéro de tour
+    if not arret: # Si la simulation n'est pas arrêtée
+        passage_tours() # Continuer à passer les tours
 
+# Commencer/arrêter le passage des tours
+def commencer():
+    """Démarre ou arrête le passage des tours"""
+    global arret
+    if arret:
+        arret = False
+        bouton_start.configure(text = "Arrêter")
+        passage_tours()
+    else:
+        arret = True
+        bouton_start.configure(text = "Commencer")
+        canvas.after_cancel(id_after)
+
+# Passage des tours
+def passage_tours():
+    """Fait passer les tours"""
+    global id_after
+    id_after = canvas.after(500, tour_suivant)
 
 
 ### Programme principal
@@ -440,13 +574,13 @@ racine.title("Simulation proies-prédateurs")
 canvas = tk.Canvas(racine, width = LARGEUR, height = HAUTEUR)
 init_grille() # Création de la grille de départ
 init_proies() # Ajout de Npro proies à des coordonnées aléatoires
-init_prédateurs() # Ajout de Npre Prédateur à des coordonnées aléatoires
-bouton_tours = tk.Button(racine, text = "Tour suivant", command = passer_tour) # Bouton pour passer le tour (à remplacer pour ne pas avoir à cliquer sur le bouton pour passer les tours, peut-être avec la commande after())
+init_prédateurs() # Ajout de Npre prédateurs à des coordonnées aléatoires
+bouton_start = tk.Button(racine, text = "Commencer", command = commencer) # Bouton pour commencer ou arrêter le passage des tours
 label_tours = tk.Label(racine, text = ("Tour", tour)) # Texte pour affiche le numéro du tour actuel
 
 # Placement des widgets
 canvas.grid(column = 1, row = 0, rowspan = 4)
-bouton_tours.grid(column = 0, row = 1)
+bouton_start.grid(column = 0, row = 1)
 label_tours.grid(column = 0, row = 0)
 
 # Boucle principale
