@@ -14,29 +14,31 @@ import random as rd
 
 ### Définitions des constantes
 
-N = 50 # Taille de la matrice
+N = 30 # Taille de la matrice
 HAUTEUR = 700 # Hauteur du canevas
 LARGEUR = 700 # Largeur du canevas
 LARGEUR_CASE = LARGEUR / 1.1 // N # Largeur des cases
 HAUTEUR_CASE = HAUTEUR / 1.1 // N # Hauteur des cases
 
 MIAM = 5 # Niveau d'énergie gagné lorsqu'un prédateur mange une proie
-Erepro = 15 # Niveau d'énergie nécessaire pour qu'un prédateur puisse se reproduire
 FLAIR = 5 # Distance maximale à laquelle un prédateur peut sentir un proie
+Epre_repro = 15 # Niveau d'énergie nécessaire pour qu'un prédateur puisse se reproduire
+Epro_repro = 2 # Niveau d'énergie nécessaire pour qu'une proie puisse se reproduire
 
 
 ### Définitions des variables globales
 
-arret = True
-id_after = 0
+arret = True # Variable pour arrêter le passage des tours
+id_after = 0 # Variable pour le compte à rebours entre chaque tours
 
 tour = 0 # Numéro du tour
 
-Npro = 40 # Nombre initial de proies (Npro proies apparaissent au début)
-Fpro = 0 # Fréquence de naissance des proies (Fpro proies naissent à chaque tour) ### REMPLACÉE PAR LE SYSTEME DE REPRODUCTION. LAISSER UNE VALEUR DE 0
+Npro = 50 # Nombre initial de proies (Npro proies apparaissent au début)
 Apro = 5 # Espérance de vie des proies en nombre de tours
+Epro = 2 # Énergie des proies (augmente de 1 par tour avec 3 en plafond. Baisse de 3 par reproduction)
 
-Npre = 10 # Nombre initial de prédateurs (Npre prédateurs apparaissent au début)
+
+Npre = 5 # Nombre initial de prédateurs (Npre prédateurs apparaissent au début)
 Apre = 15 # Espérance de vie des prédateurs en nombre de tours
 Epre = 12 # Énergie des prédateurs (baisse de 1 par tour, s'il elle atteint zéro, le prédateur meurt de faim)
 
@@ -100,7 +102,7 @@ def init_proies():
     while cpt > 0:
         i, j = rd.randint(1, N), rd.randint(1, N) # Génération des coordonnées aléatoires
         if config[i][j] == 0: # Si c'est une case vide
-            config[i][j] = ["Proie", Apro] # Création d'une liste avec toutes les infos sur l'animal (ici c'est une proie avec Apro le nombre de tours d'espérance de vie)
+            config[i][j] = ["Proie", Apro, Epro] # Création d'une liste avec toutes les infos sur l'animal (ici c'est une proie avec Apro le nombre de tours d'espérance de vie)
             cpt -= 1
     affiche_grille(config)
 
@@ -195,30 +197,22 @@ def tour_suivant():
     global tour
 
     # Modification de l'espérance de vie (retirer 1 à chaque tour)
-    for i in range(1, N + 1): # Pour chaque liste (ex : [0, 0, ["Proie", 5], ["Proie", 2], 0, ["Prédateur", 15, 12], 0])
-        for j in range(1, N + 1): # Pour chaque élément dans la liste (ex : ["Proie", 5])
+    for i in range(1, N + 1): # Pour chaque liste (ex : [0, 0, ["Proie", 5, 3], ["Proie", 2, 3], 0, ["Prédateur", 15, 12], 0])
+        for j in range(1, N + 1): # Pour chaque élément dans la liste (ex : ["Proie", 5, 3])
+            if type(config[i][j]) == list and config[i][j][0] == "Proie" and config[i][j][2] < Epro_repro: # Si c'est une proie et que celle-ci a une énergie inférieure à Erepro
+                config[i][j][2] += 1 # Ajouter 1 d'énergie
             if type(config[i][j]) == list: # Seulement si c'est une liste (pas un 0 ou un #)
-                config[i][j][1] -= 1 # Retirer 1 à l'espérance de vie (ex : ["Proie", 5] devient ["Proie", 4])
+                config[i][j][1] -= 1 # Retirer 1 à l'espérance de vie (ex : ["Proie", 5, 3] devient ["Proie", 4, 3])
                 if config[i][j][1] == 0: # Si c'est par exemple [Proie, 0]
                     config[i][j] = 0 # Remplacer par 0 (mort de l'animal)
 
     # Modification de l'énergie des prédateurs (retirer 1 à chaque tour)
-    for i in range(1, N + 1): # Pour chaque liste (ex : [0, 0, ["Proie", 5], ["Proie", 2], 0, ["Prédateur", 15, 12], 0])
-        for j in range(1, N + 1): # Pour chaque élément dans la liste (ex : ["Proie", 5])
+    for i in range(1, N + 1): # Pour chaque liste (ex : [0, 0, ["Proie", 5, 3], ["Proie", 2, 3], 0, ["Prédateur", 15, 12], 0])
+        for j in range(1, N + 1): # Pour chaque élément dans la liste (ex : ["Proie", 5, 3])
             if type(config[i][j]) == list and config[i][j][0] == "Prédateur": # Seulement si c'est un prédateur
                 config[i][j][2] -= 1 # Retirer 1 à l'espérance de vie (ex : ["Prédateur", 14, 12] devient ["Prédateur", 14, 11])
                 if config[i][j][2] == 0: # Si c'est par exemple ["Prédateur", 14, 0]
                     config[i][j] = 0 # Remplacer par 0 (mort de l'animal)
-
-    # Ajout de proies
-    cpt = Fpro # Compteur égal à Fpro, la fréquence de naissance des proies
-    while cpt > 0:
-        i, j = rd.randint(1, N), rd.randint(1, N) # Génération des coordonnées aléatoires
-        if config[i][j] == 0: # Si la case est vide
-            config[i][j] = ["Proie", Apro] # Création d'une liste avec toutes les infos sur l'animal (ici c'est une proie avec Apro le nombre de tours d'espérance de vie)
-            cpt -= 1
-        else: # Si la case n'est pas vide
-            continue # Recommencer la boucle
 
     # Déplacement des proies
     for i in range(1, N + 1):
@@ -268,175 +262,191 @@ def tour_suivant():
     # Reproduction des proies
     for i in range(1, N + 1):
         for j in range(1, N + 1):
-            if type(config[i][j]) == list and config[i][j][0] == "Proie" and config[i][j][-1] != "Reproduit" : # Seulement si c'est une proie et qu'elle ne s'est pas déjà reproduite pendant ce tour
+            if type(config[i][j]) == list and config[i][j][0] == "Proie" and config[i][j][-1] != "Reproduit" and config[i][j][2] >= Epro_repro: # Seulement si c'est une proie et qu'elle ne s'est pas déjà reproduite pendant ce tour
                 case = direction(i, j, "Proie")
                 if case == 0: # Si aucune case adjacente n'a de proie
                     break # Annuler la boucle
                 elif case == 1: # Si la case 1 est une proie
                     config[i][j].append("Reproduit") # Ajout du terme "Reproduit" à la fin de la liste pour éviter que les proies se reproduisent plusieurs fois par tour
+                    config[i][j][2] -= 3
                     config[i-1][j-1].append("Reproduit")
+                    config[i-1][j-1][2] -= 3
                     case = direction(i, j, 0)
                     if case == 0: # Si aucune case n'est vide (pas de place pour une nouvelle proie)
                         break # Annuler la boucle
                     elif case == 2: # Si la case 2 est disponible
-                        config[i-1][j] = ["Proie", Apro] # Ajouter une proies avec une espérance de vie de Apro tours
+                        config[i-1][j] = ["Proie", Apro, Epro] # Ajouter une proies avec une espérance de vie de Apro tours
                     elif case == 3:
-                        config[i-1][j+1] = ["Proie", Apro]
+                        config[i-1][j+1] = ["Proie", Apro, Epro]
                     elif case == 4:
-                        config[i][j-1] = ["Proie", Apro]
+                        config[i][j-1] = ["Proie", Apro, Epro]
                     elif case == 5:
-                        config[i][j+1] = ["Proie", Apro]
+                        config[i][j+1] = ["Proie", Apro, Epro]
                     elif case == 6:
-                        config[i+1][j-1] = ["Proie", Apro]
+                        config[i+1][j-1] = ["Proie", Apro, Epro]
                     elif case == 7:
-                        config[i+1][j] = ["Proie", Apro]
+                        config[i+1][j] = ["Proie", Apro, Epro]
                     elif case == 8:
-                        config[i+1][j+1] = ["Proie", Apro]
+                        config[i+1][j+1] = ["Proie", Apro, Epro]
                 elif case == 2:
                     config[i][j].append("Reproduit")
+                    config[i][j][2] -= 3
                     config[i-1][j].append("Reproduit")
+                    config[i-1][j][2] -= 3
                     case = direction(i, j, 0)
                     if case == 0:
                         pass
                     elif case == 1:
-                        config[i-1][j-1] = ["Proie", Apro]
+                        config[i-1][j-1] = ["Proie", Apro, Epro]
                     elif case == 3:
-                        config[i-1][j+1] = ["Proie", Apro]
+                        config[i-1][j+1] = ["Proie", Apro, Epro]
                     elif case == 4:
-                        config[i][j-1] = ["Proie", Apro]
+                        config[i][j-1] = ["Proie", Apro, Epro]
                     elif case == 5:
-                        config[i][j+1] = ["Proie", Apro]
+                        config[i][j+1] = ["Proie", Apro, Epro]
                     elif case == 6:
-                        config[i+1][j-1] = ["Proie", Apro]
+                        config[i+1][j-1] = ["Proie", Apro, Epro]
                     elif case == 7:
-                        config[i+1][j] = ["Proie", Apro]
+                        config[i+1][j] = ["Proie", Apro, Epro]
                     elif case == 8:
-                        config[i+1][j+1] = ["Proie", Apro]
+                        config[i+1][j+1] = ["Proie", Apro, Epro]
                 elif case == 3:
                     config[i][j].append("Reproduit")
+                    config[i][j][2] -= 3
                     config[i-1][j+1].append("Reproduit")
+                    config[i-1][j+1][2] -= 3
                     case = direction(i, j, 0)
                     if case == 0:
                         pass
                     elif case == 1:
-                        config[i-1][j-1] = ["Proie", Apro]
+                        config[i-1][j-1] = ["Proie", Apro, Epro]
                     elif case == 2:
-                        config[i-1][j] = ["Proie", Apro]
+                        config[i-1][j] = ["Proie", Apro, Epro]
                     elif case == 4:
-                        config[i][j-1] = ["Proie", Apro]
+                        config[i][j-1] = ["Proie", Apro, Epro]
                     elif case == 5:
-                        config[i][j+1] = ["Proie", Apro]
+                        config[i][j+1] = ["Proie", Apro, Epro]
                     elif case == 6:
-                        config[i+1][j-1] = ["Proie", Apro]
+                        config[i+1][j-1] = ["Proie", Apro, Epro]
                     elif case == 7:
-                        config[i+1][j] = ["Proie", Apro]
+                        config[i+1][j] = ["Proie", Apro, Epro]
                     elif case == 8:
-                        config[i+1][j+1] = ["Proie", Apro]
+                        config[i+1][j+1] = ["Proie", Apro, Epro]
                 elif case == 4:
                     config[i][j].append("Reproduit")
+                    config[i][j][2] -= 3
                     config[i][j-1].append("Reproduit")
+                    config[i][j-1][2] -= 3
                     case = direction(i, j, 0)
                     if case == 0:
                         pass
                     elif case == 1:
-                        config[i-1][j-1] = ["Proie", Apro]
+                        config[i-1][j-1] = ["Proie", Apro, Epro]
                     elif case == 2:
-                        config[i-1][j] = ["Proie", Apro]
+                        config[i-1][j] = ["Proie", Apro, Epro]
                     elif case == 3:
-                        config[i-1][j+1] = ["Proie", Apro]
+                        config[i-1][j+1] = ["Proie", Apro, Epro]
                     elif case == 5:
-                        config[i][j+1] = ["Proie", Apro]
+                        config[i][j+1] = ["Proie", Apro, Epro]
                     elif case == 6:
-                        config[i+1][j-1] = ["Proie", Apro]
+                        config[i+1][j-1] = ["Proie", Apro, Epro]
                     elif case == 7:
-                        config[i+1][j] = ["Proie", Apro]
+                        config[i+1][j] = ["Proie", Apro, Epro]
                     elif case == 8:
-                        config[i+1][j+1] = ["Proie", Apro]
+                        config[i+1][j+1] = ["Proie", Apro, Epro]
                 elif case == 5:
                     config[i][j].append("Reproduit")
+                    config[i][j][2] -= 3
                     config[i][j+1].append("Reproduit")
+                    config[i][j+1][2] -= 3
                     case = direction(i, j, 0)
                     if case == 0:
                         pass
                     elif case == 1:
-                        config[i-1][j-1] = ["Proie", Apro]
+                        config[i-1][j-1] = ["Proie", Apro, Epro]
                     elif case == 2:
-                        config[i-1][j] = ["Proie", Apro]
+                        config[i-1][j] = ["Proie", Apro, Epro]
                     elif case == 3:
-                        config[i-1][j+1] = ["Proie", Apro]
+                        config[i-1][j+1] = ["Proie", Apro, Epro]
                     elif case == 4:
-                        config[i][j-1] = ["Proie", Apro]
+                        config[i][j-1] = ["Proie", Apro, Epro]
                     elif case == 6:
-                        config[i+1][j-1] = ["Proie", Apro]
+                        config[i+1][j-1] = ["Proie", Apro, Epro]
                     elif case == 7:
-                        config[i+1][j] = ["Proie", Apro]
+                        config[i+1][j] = ["Proie", Apro, Epro]
                     elif case == 8:
-                        config[i+1][j+1] = ["Proie", Apro]
+                        config[i+1][j+1] = ["Proie", Apro, Epro]
                 elif case == 6:
                     config[i][j].append("Reproduit")
+                    config[i][j][2] -= 3
                     config[i+1][j-1].append("Reproduit")
+                    config[i+1][j-1][2] -= 3
                     case = direction(i, j, 0)
                     if case == 0:
                         pass
                     elif case == 1:
-                        config[i-1][j-1] = ["Proie", Apro]
+                        config[i-1][j-1] = ["Proie", Apro, Epro]
                     elif case == 2:
-                        config[i-1][j] = ["Proie", Apro]
+                        config[i-1][j] = ["Proie", Apro, Epro]
                     elif case == 3:
-                        config[i-1][j+1] = ["Proie", Apro]
+                        config[i-1][j+1] = ["Proie", Apro, Epro]
                     elif case == 4:
-                        config[i][j-1] = ["Proie", Apro]
+                        config[i][j-1] = ["Proie", Apro, Epro]
                     elif case == 5:
-                        config[i][j+1] = ["Proie", Apro]
+                        config[i][j+1] = ["Proie", Apro, Epro]
                     elif case == 7:
-                        config[i+1][j] = ["Proie", Apro]
+                        config[i+1][j] = ["Proie", Apro, Epro]
                     elif case == 8:
-                        config[i+1][j+1] = ["Proie", Apro]
+                        config[i+1][j+1] = ["Proie", Apro, Epro]
                 elif case == 7:
                     config[i][j].append("Reproduit")
+                    config[i][j][2] -= 3
                     config[i+1][j].append("Reproduit")
+                    config[i+1][j][2] -= 3
                     case = direction(i, j, 0)
                     if case == 0:
                         pass
                     elif case == 1:
-                        config[i-1][j-1] = ["Proie", Apro]
+                        config[i-1][j-1] = ["Proie", Apro, Epro]
                     elif case == 2:
-                        config[i-1][j] = ["Proie", Apro]
+                        config[i-1][j] = ["Proie", Apro, Epro]
                     elif case == 3:
-                        config[i-1][j+1] = ["Proie", Apro]
+                        config[i-1][j+1] = ["Proie", Apro, Epro]
                     elif case == 4:
-                        config[i][j-1] = ["Proie", Apro]
+                        config[i][j-1] = ["Proie", Apro, Epro]
                     elif case == 5:
-                        config[i][j+1] = ["Proie", Apro]
+                        config[i][j+1] = ["Proie", Apro, Epro]
                     elif case == 6:
-                        config[i+1][j-1] = ["Proie", Apro]
+                        config[i+1][j-1] = ["Proie", Apro, Epro]
                     elif case == 8:
-                        config[i+1][j+1] = ["Proie", Apro]
+                        config[i+1][j+1] = ["Proie", Apro, Epro]
                 elif case == 8:
                     config[i][j].append("Reproduit")
+                    config[i][j][2] -= 3
                     config[i+1][j+1].append("Reproduit")
+                    config[i+1][j+1][2] -= 3
                     case = direction(i, j, 0)
                     if case == 0:
                         pass
                     elif case == 1:
-                        config[i-1][j-1] = ["Proie", Apro]
+                        config[i-1][j-1] = ["Proie", Apro, Epro]
                     elif case == 2:
-                        config[i-1][j] = ["Proie", Apro]
+                        config[i-1][j] = ["Proie", Apro, Epro]
                     elif case == 3:
-                        config[i-1][j+1] = ["Proie", Apro]
+                        config[i-1][j+1] = ["Proie", Apro, Epro]
                     elif case == 4:
-                        config[i][j-1] = ["Proie", Apro]
+                        config[i][j-1] = ["Proie", Apro, Epro]
                     elif case == 5:
-                        config[i][j+1] = ["Proie", Apro]
+                        config[i][j+1] = ["Proie", Apro, Epro]
                     elif case == 6:
-                        config[i+1][j-1] = ["Proie", Apro]
+                        config[i+1][j-1] = ["Proie", Apro, Epro]
                     elif case == 7:
-                        config[i+1][j] = ["Proie", Apro]
+                        config[i+1][j] = ["Proie", Apro, Epro]
 
     # Reproduction des prédateurs
     for i in range(1, N + 1):
         for j in range(1, N + 1):
-            if type(config[i][j]) == list and config[i][j][0] == "Prédateur" and config[i][j][-1] != "Reproduit" and config[i][j][2] >= Erepro: # Seulement si c'est un prédateur, qu'il ne s'est pas déjà reproduit pendant ce tour et que son niveau d'énergie est supérieur ou égal au niveau d'énergie Erepro nécessaire pour pouvoir se reproduire
+            if type(config[i][j]) == list and config[i][j][0] == "Prédateur" and config[i][j][-1] != "Reproduit" and config[i][j][2] >= Epre_repro: # Seulement si c'est un prédateur, qu'il ne s'est pas déjà reproduit pendant ce tour et que son niveau d'énergie est supérieur ou égal au niveau d'énergie Epre_repro nécessaire pour pouvoir se reproduire
                 config[i][j].append("Reproduit")
                 cpt_repro = 1
                 r = True
@@ -453,7 +463,7 @@ def tour_suivant():
             if type(config[i][j]) == list and config[i][j][-1] == "Reproduit": # Seulement si c'est une liste (donc un animal) et qu'elle a le terme "Reproduit" à la fin
                 del config[i][j][-1] # Supprimer le dernier terme de la liste ("Reproduit")
 
-    # Déplacement des prédateurs
+    # Déplacement et chasse des prédateurs
     for i in range(1, N + 1):
         for j in range(1, N + 1):
             if type(config[i][j]) == list and config[i][j][0] == "Prédateur" and config[i][j][-1] != "Déplacé" : # Seulement si c'est un prédateur et qu'il n'a pas déjà effectué un déplacement pendant ce tour
