@@ -20,32 +20,31 @@ import random as rd
 
 N = 30 # Taille de la matrice
 HAUTEUR = 700 # Hauteur du canevas
-LARGEUR = 550 # Largeur du canevas
-LARGEUR_CASE = HAUTEUR // 1.23 // N # Largeur des cases
+LARGEUR = 600 # Largeur du canevas
+LARGEUR_CASE = 20 # Largeur des cases
 HAUTEUR_CASE = LARGEUR_CASE # Hauteur des cases
 
 CHRONO = 500 # Temps en millisecondes entre chaque tour
 
 MIAM = 5 # Niveau d'énergie gagné lorsqu'un prédateur mange une proie
 FLAIR = 5 # Distance maximale à laquelle un prédateur peut sentir un proie
-Erepro = 15 # Niveau d'énergie nécessaire pour qu'un prédateur puisse se reproduire
 
 
 
 ### Définitions des variables globales
 
+tour = 0 # Numéro du tour
 arret = True # Variable pour arrêter le passage des tours
 var_chrono = 0 # Variable pour le compte à rebours entre chaque tour
 
-tour = 0 # Numéro du tour
-
-Npro = 10 # Nombre initial de proies (Npro proies apparaissent au début)
-Apro = 5 # Espérance de vie des proies en nombre de tours
+Npro = 30 # Nombre initial de proies (Npro proies apparaissent au début)
+Apro = 10 # Espérance de vie des proies en nombre de tours
 Epro = 2 # Énergie des proies (augmente de 1 par tour avec Epro en plafond. Une énergie maximale (égale à Epro) est nécessaire pour qu'une proie puisse se reproduire. Epro revient à 0 à chaque reproduction.)
 
 Npre = 2 # Nombre initial de prédateurs (Npre prédateurs apparaissent au début)
 Apre = 15 # Espérance de vie des prédateurs en nombre de tours
 Epre = 12 # Énergie des prédateurs (baisse de 1 par tour, s'il elle atteint zéro, le prédateur meurt de faim)
+Erepro = 15 # Niveau d'énergie nécessaire pour qu'un prédateur puisse se reproduire
 
 sauv_validee = False # Variable pour afficher si la matrice actuelle est sauvegardée
 
@@ -55,8 +54,8 @@ sauv_validee = False # Variable pour afficher si la matrice actuelle est sauvega
 
 # Choix des couleurs
 def choix_couleur(n):
-    """Retourne une couleur à partir de l'entier n"""
-    if n == 0: # Si il n'y a rien
+    """Retourne une couleur à partir de l'entier n."""
+    if n == 0: # S'il n'y a rien
         return "green" # Couleur du fond
     else:
         if n[0] == "Proie": # Si c'est une proie
@@ -96,29 +95,29 @@ def init_grille():
 
 # Affichage de la grille
 def affiche_grille(config):
-    """Affiche la configuration donnée"""
-    for x in range(1, N + 1):
-        for y in range(1, N + 1):
-            col = choix_couleur(config[x][y])
-            canvas.itemconfigure(grille[x][y], fill = col)
+    """Affiche la configuration donnée."""
+    for x in range(1, N + 1): # Pour chaque abscisse
+        for y in range(1, N + 1): # Pour chaque ordonnée
+            col = choix_couleur(config[x][y]) # Choix de la couleur en fonction de l'élément
+            canvas.itemconfigure(grille[x][y], fill = col) # Changement de la couleur de la case en fonction de la couleur retournée
 
 
 # Initialise les proies
 def init_proies():
-    """Ajoute Npro proies à des coordonnées aléatoires"""
+    """Ajoute Npro proies à des coordonnées aléatoires."""
     global config
     cpt = Npro
     while cpt > 0:
         x, y = rd.randint(1, N + 1), rd.randint(1, N + 1) # Génération des coordonnées aléatoires
         if config[x][y] == 0: # Si c'est une case vide
-            config[x][y] = ["Proie", Apro, Epro] # Création d'une liste avec toutes les infos sur l'animal (ici c'est une proie avec Apro le nombre de tours d'espérance de vie)
+            config[x][y] = ["Proie", Apro, Epro] # Création d'une liste avec toutes les infos sur l'animal (ici c'est une proie avec Apro le nombre de tours d'espérance de vie puis Epro l'énergie de la proie)
             cpt -= 1
     affiche_grille(config)
 
 
 # Initialise les prédateurs
 def init_prédateurs():
-    """Ajoute Npre prédateurs à des coordonnées aléatoires"""
+    """Ajoute Npre prédateurs à des coordonnées aléatoires."""
     global config
     cpt = Npre
     while cpt > 0:
@@ -130,47 +129,69 @@ def init_prédateurs():
 
 
 # Retourne une case adjacente aléatoire selon la condition demandée
-def direction(x, y, n):
-    """Retourne une case adjacente aléatoire ayant pour condition n (par exemple 0 ou Proie)"""
-    case_1 = case_2 = case_3 = case_4 = case_5 = case_6 = case_7 = case_8 = False # Création des variables pour chaque case (False = indisponible, True = disponible)
+def direction(x, y, n, e):
+    """Retourne une case adjacente aléatoire. n = 0 ou "Proie" ou "Prédateur" et e = "Déplacement" (= chasse pour les prédateurs) ou "Reproduction"."""
+    case_1 = case_2 = case_3 = case_4 = case_5 = case_6 = case_7 = case_8 = False # Création des variables pour chaque case (False = case indisponible, True = case disponible)
 
-    # Vérifier pour chaque case (8 directions) que ce n'est pas une liste et que c'est égal à n
-    if not type(config[x-1][y-1]) == list and config[x-1][y-1] == n:
-        case_1 = True # Case 1 : en haut à gauche
-    if not type(config[x-1][y-1]) == list and config[x-1][y] == n:
-        case_2 = True # Case 2 : à gauche
-    if not type(config[x-1][y+1]) == list and config[x-1][y+1] == n:
-        case_3 = True # Case 3 : en bas à gauche
-    if not type(config[x][y-1]) == list and config[x][y-1] == n:
-        case_4 = True # Case 4 : en haut
-    if not type(config[x][y+1]) == list and config[x][y+1] == n:
-        case_5 = True # Case 5 : en bas
-    if not type(config[x+1][y-1]) == list and config[x+1][y-1] == n:
-        case_6 = True # Case 6 : en haut à droite
-    if not type(config[x+1][y]) == list and config[x+1][y] == n:
-        case_7 = True # Case 7 : à droite
-    if not type(config[x+1][y+1]) == list and config[x+1][y+1] == n:
-        case_8 = True # Case 8 : en bas à droite
+    if e == "Déplacement": # Si on cherche une case pour un déplacement/chasse
+        # Vérifier pour chaque case (8 directions) que ce n'est pas une liste et que c'est égal à n (n = 0)
+        if not type(config[x-1][y-1]) == list and config[x-1][y-1] == n:
+            case_1 = True # Case 1 : en haut à gauche
+        if not type(config[x-1][y-1]) == list and config[x-1][y] == n:
+            case_2 = True # Case 2 : à gauche
+        if not type(config[x-1][y+1]) == list and config[x-1][y+1] == n:
+            case_3 = True # Case 3 : en bas à gauche
+        if not type(config[x][y-1]) == list and config[x][y-1] == n:
+            case_4 = True # Case 4 : en haut
+        if not type(config[x][y+1]) == list and config[x][y+1] == n:
+            case_5 = True # Case 5 : en bas
+        if not type(config[x+1][y-1]) == list and config[x+1][y-1] == n:
+            case_6 = True # Case 6 : en haut à droite
+        if not type(config[x+1][y]) == list and config[x+1][y] == n:
+            case_7 = True # Case 7 : à droite
+        if not type(config[x+1][y+1]) == list and config[x+1][y+1] == n:
+            case_8 = True # Case 8 : en bas à droite
 
-    # Vérifier pour chaque case (8 directions) que c'est une liste et que son premier terme est égal à n
-    if type(config[x-1][y-1]) == list and config[x-1][y-1][0] == n:
-        case_1 = True
-    if type(config[x-1][y]) == list and config[x-1][y][0] == n:
-        case_2 = True
-    if type(config[x-1][y+1]) == list and config[x-1][y+1][0] == n:
-        case_3 = True
-    if type(config[x][y-1]) == list and config[x][y-1][0] == n:
-        case_4 = True
-    if type(config[x][y+1]) == list and config[x][y+1][0] == n:
-        case_5 = True
-    if type(config[x+1][y-1]) == list and config[x+1][y-1][0] == n:
-        case_6 = True
-    if type(config[x+1][y]) == list and config[x+1][y][0] == n:
-        case_7 = True
-    if type(config[x+1][y+1]) == list and config[x+1][y+1][0] == n:
-        case_8 = True
+        # Vérifier pour chaque case (8 directions) que c'est une liste et que son premier terme est égal à n (n = "Proie" ou "Prédateur")
+        if type(config[x-1][y-1]) == list and config[x-1][y-1][0] == n:
+            case_1 = True
+        if type(config[x-1][y]) == list and config[x-1][y][0] == n:
+            case_2 = True
+        if type(config[x-1][y+1]) == list and config[x-1][y+1][0] == n:
+            case_3 = True
+        if type(config[x][y-1]) == list and config[x][y-1][0] == n:
+            case_4 = True
+        if type(config[x][y+1]) == list and config[x][y+1][0] == n:
+            case_5 = True
+        if type(config[x+1][y-1]) == list and config[x+1][y-1][0] == n:
+            case_6 = True
+        if type(config[x+1][y]) == list and config[x+1][y][0] == n:
+            case_7 = True
+        if type(config[x+1][y+1]) == list and config[x+1][y+1][0] == n:
+            case_8 = True
 
-    if case_1 == False and case_2 == False and case_3 == False and case_4 == False and case_5 == False and case_6 == False and case_7 == False and case_8 == False:
+    if e == "Reproduction": # Si on cherche une case pour une reproduction
+        # Vérifier pour chaque case (8 directions) que c'est une liste, que son premier terme est égal à n (n = "Proie" ou "Prédateur"), que la proie présente ne s'est pas déjà reproduite et que son énergie est supérieur où égale à l'énergie maximale
+        if type(config[x-1][y-1]) == list and config[x-1][y-1][0] == n and not config[x-1][y-1].count("Reproduit") > 0 and config[x-1][y-1][2] >= Epro:
+            case_1 = True
+        if type(config[x-1][y]) == list and config[x-1][y][0] == n and not config[x-1][y].count("Reproduit") > 0 and config[x-1][y][2] >= Epro:
+            case_2 = True
+        if type(config[x-1][y+1]) == list and config[x-1][y+1][0] == n and not config[x-1][y+1].count("Reproduit") > 0 and config[x-1][y+1][2] >= Epro:
+            case_3 = True
+        if type(config[x][y-1]) == list and config[x][y-1][0] == n and not config[x][y-1].count("Reproduit") > 0 and config[x][y-1][2] >= Epro:
+            case_4 = True
+        if type(config[x][y+1]) == list and config[x][y+1][0] == n and not config[x][y+1].count("Reproduit") > 0 and config[x][y+1][2] >= Epro:
+            case_5 = True
+        if type(config[x+1][y-1]) == list and config[x+1][y-1][0] == n and not config[x+1][y-1].count("Reproduit") > 0 and config[x+1][y-1][2] >= Epro:
+            case_6 = True
+        if type(config[x+1][y]) == list and config[x+1][y][0] == n and not config[x+1][y].count("Reproduit") > 0 and config[x+1][y][2] >= Epro:
+            case_7 = True
+        if type(config[x+1][y+1]) == list and config[x+1][y+1][0] == n and not config[x+1][y+1].count("Reproduit") > 0 and config[x+1][y+1][2] >= Epro:
+            case_8 = True
+
+
+
+    if case_1 == case_2 == case_3 == case_4 == case_5 == case_6 == case_7 == case_8 == False:
         case = 0 # Si aucune case n'est disponible, retourner case = 0
     else:
         d = True # Variable pour arrêter la boucle
@@ -205,14 +226,14 @@ def direction(x, y, n):
 
 # Modification de l'espérance de vie et de l'énergie des animaux
 def vie_energie():
-    """Retire 1 tour d'espérance de vie à tous les animaux, 1 d'énergie à tous les prédateurs et ajout 1 d'énergie à toutes les proies"""
+    """Retire 1 tour d'espérance de vie à tous les animaux, retire 1 d'énergie à tous les prédateurs et ajoute 1 d'énergie à toutes les proies."""
     global config
-    for x in range(1, N + 1): # Pour chaque liste (ex : [0, 0, ["Proie", 5, 3], ["Proie", 2, 3], 0, ["Prédateur", 15, 12], 0])
-        for y in range(1, N + 1): # Pour chaque élément dans la liste (ex : ["Proie", 5, 3])
+    for x in range(1, N + 1): # Pour chaque abscisse (ex : [0, 0, ["Proie", 5, 3], ["Proie", 2, 3], 0, ["Prédateur", 15, 12], 0])
+        for y in range(1, N + 1): # Pour chaque ordonnée (ex : ["Proie", 5, 3])
             # Espérance de vie des animaux
-            if type(config[x][y]) == list: # Seulement si c'est une liste (pas un 0 ou un #)
+            if type(config[x][y]) == list: # Seulement si c'est une liste (donc un animal)
                 config[x][y][1] -= 1 # Retirer 1 à l'espérance de vie (ex : ["Proie", 5, 3] devient ["Proie", 4, 3])
-                if config[x][y][1] <= 0: # Si c'est par exemple [Proie, 0]
+                if config[x][y][1] <= 0: # Si c'est par exemple ["Proie", 0, 3]
                     config[x][y] = 0 # Remplacer par 0 (mort de l'animal)
 
             # Énergie des proies
@@ -228,18 +249,18 @@ def vie_energie():
 
 # Déplacement des proies
 def deplacement_proies():
-    """Déplace toutes les proies aléatoirement si une case adjacente est vide"""
+    """Déplace toutes les proies aléatoirement si une case adjacente est vide."""
     global config
     for x in range(1, N + 1):
         for y in range(1, N + 1):
             if type(config[x][y]) == list and config[x][y][0] == "Proie" and config[x][y][-1] != "Déplacé" : # Seulement si c'est une proie et qu'elle n'a pas déjà effectué un déplacement pendant ce tour
-                case = direction(x, y, 0)
-                if case == 0: # Si aucune case adjacente n'est vide
-                    break # Arrêter la boucle
-                elif case == 1: # Si la case 1 est libre
+                case = direction(x, y, 0, "Déplacement") # Obtenir une case aléatoire pour un déplacement
+                if case == 0: # Si aucune case disponible
+                    break # Annuler la boucle
+                elif case == 1: # Si la case 1 est disponible
                     config[x-1][y-1] = config[x][y][:] # Copie de la liste sur la nouvelle position
                     config[x][y] = 0 # Suppression de la liste sur l'ancienne position
-                    config[x-1][y-1].append("Déplacé") # Ajout du terme "Déplacé" à la fin de la liste pour éviter de déplacer la même proie 2 fois de suite
+                    config[x-1][y-1].append("Déplacé") # Ajout du terme "Déplacé" à la fin de la liste pour éviter de déplacer la même proie plusieurs fois dans le même tour
                 elif case == 2:
                     config[x-1][y] = config[x][y][:]
                     config[x][y] = 0
@@ -272,195 +293,195 @@ def deplacement_proies():
 
 # Reproduction des proies
 def reproduction_proies():
-    """Reproduit toutes les proies qui sont côte à côte si elles ont une énergie égale à Epro"""
+    """Reproduit toutes les proies qui sont côte à côte si elles ont une énergie égale à Epro."""
     global config
     for x in range(1, N + 1):
         for y in range(1, N + 1):
             if type(config[x][y]) == list and config[x][y][0] == "Proie" and config[x][y][-1] != "Reproduit" and config[x][y][2] >= Epro: # Seulement si c'est une proie, qu'elle ne s'est pas déjà reproduite pendant ce tour et que son niveau d'énergie est maximal (égal à Epro)
-                case = direction(x, y, "Proie")
-                if case == 0: # Si aucune case adjacente n'a de proie
+                case = direction(x, y, "Proie", "Reproduction") # Obtenir une case aléatoire ou se trouve une proie pour une reproduction
+                if case == 0: # Si aucune case disponible
                     break # Annuler la boucle
-                elif case == 1: # Si la case 1 est une proie
+                elif case == 1: # Si la case 1 est disponible
                     config[x][y].append("Reproduit") # Ajout du terme "Reproduit" à la fin de la liste pour éviter que les proies se reproduisent plusieurs fois par tour
-                    config[x][y][2] -= 3
+                    config[x][y][2] = 0 # Réinitialisation de l'énergie
                     config[x-1][y-1].append("Reproduit")
-                    config[x-1][y-1][2] -= 3
-                    case = direction(x, y, 0)
-                    if case == 0: # Si aucune case n'est vide (pas de place pour une nouvelle proie)
+                    config[x-1][y-1][2] = 0 # Réinitialisation de l'énergie
+                    case = direction(x, y, 0, "Déplacement")
+                    if case == 0: # Si aucune case disponible
                         break # Annuler la boucle
                     elif case == 2: # Si la case 2 est disponible
-                        config[x-1][y] = ["Proie", Apro, Epro] # Ajouter une proies avec une espérance de vie de Apro tours
+                        config[x-1][y] = ["Proie", Apro, (Epro - 1)] # Ajouter une proies avec une espérance de vie de Apro tours et une énergie égale à (Epro - 1), pour ne pas que la nouvelle proie puisse se reproduire immédiatement
                     elif case == 3:
-                        config[x-1][y+1] = ["Proie", Apro, Epro]
+                        config[x-1][y+1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 4:
-                        config[x][y-1] = ["Proie", Apro, Epro]
+                        config[x][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 5:
-                        config[x][y+1] = ["Proie", Apro, Epro]
+                        config[x][y+1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 6:
-                        config[x+1][y-1] = ["Proie", Apro, Epro]
+                        config[x+1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 7:
-                        config[x+1][y] = ["Proie", Apro, Epro]
+                        config[x+1][y] = ["Proie", Apro, (Epro - 1)]
                     elif case == 8:
-                        config[x+1][y+1] = ["Proie", Apro, Epro]
+                        config[x+1][y+1] = ["Proie", Apro, (Epro - 1)]
                 elif case == 2:
                     config[x][y].append("Reproduit")
                     config[x][y][2] -= 3
                     config[x-1][y].append("Reproduit")
                     config[x-1][y][2] -= 3
-                    case = direction(x, y, 0)
+                    case = direction(x, y, 0, "Déplacement")
                     if case == 0:
                         pass
                     elif case == 1:
-                        config[x-1][y-1] = ["Proie", Apro, Epro]
+                        config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 3:
-                        config[x-1][y+1] = ["Proie", Apro, Epro]
+                        config[x-1][y+1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 4:
-                        config[x][y-1] = ["Proie", Apro, Epro]
+                        config[x][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 5:
-                        config[x][y+1] = ["Proie", Apro, Epro]
+                        config[x][y+1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 6:
-                        config[x+1][y-1] = ["Proie", Apro, Epro]
+                        config[x+1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 7:
-                        config[x+1][y] = ["Proie", Apro, Epro]
+                        config[x+1][y] = ["Proie", Apro, (Epro - 1)]
                     elif case == 8:
-                        config[x+1][y+1] = ["Proie", Apro, Epro]
+                        config[x+1][y+1] = ["Proie", Apro, (Epro - 1)]
                 elif case == 3:
                     config[x][y].append("Reproduit")
                     config[x][y][2] -= 3
                     config[x-1][y+1].append("Reproduit")
                     config[x-1][y+1][2] -= 3
-                    case = direction(x, y, 0)
+                    case = direction(x, y, 0, "Déplacement")
                     if case == 0:
                         pass
                     elif case == 1:
-                        config[x-1][y-1] = ["Proie", Apro, Epro]
+                        config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 2:
-                        config[x-1][y] = ["Proie", Apro, Epro]
+                        config[x-1][y] = ["Proie", Apro, (Epro - 1)]
                     elif case == 4:
-                        config[x][y-1] = ["Proie", Apro, Epro]
+                        config[x][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 5:
-                        config[x][y+1] = ["Proie", Apro, Epro]
+                        config[x][y+1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 6:
-                        config[x+1][y-1] = ["Proie", Apro, Epro]
+                        config[x+1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 7:
-                        config[x+1][y] = ["Proie", Apro, Epro]
+                        config[x+1][y] = ["Proie", Apro, (Epro - 1)]
                     elif case == 8:
-                        config[x+1][y+1] = ["Proie", Apro, Epro]
+                        config[x+1][y+1] = ["Proie", Apro, (Epro - 1)]
                 elif case == 4:
                     config[x][y].append("Reproduit")
                     config[x][y][2] -= 3
                     config[x][y-1].append("Reproduit")
                     config[x][y-1][2] -= 3
-                    case = direction(x, y, 0)
+                    case = direction(x, y, 0, "Déplacement")
                     if case == 0:
                         pass
                     elif case == 1:
-                        config[x-1][y-1] = ["Proie", Apro, Epro]
+                        config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 2:
-                        config[x-1][y] = ["Proie", Apro, Epro]
+                        config[x-1][y] = ["Proie", Apro, (Epro - 1)]
                     elif case == 3:
-                        config[x-1][y+1] = ["Proie", Apro, Epro]
+                        config[x-1][y+1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 5:
-                        config[x][y+1] = ["Proie", Apro, Epro]
+                        config[x][y+1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 6:
-                        config[x+1][y-1] = ["Proie", Apro, Epro]
+                        config[x+1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 7:
-                        config[x+1][y] = ["Proie", Apro, Epro]
+                        config[x+1][y] = ["Proie", Apro, (Epro - 1)]
                     elif case == 8:
-                        config[x+1][y+1] = ["Proie", Apro, Epro]
+                        config[x+1][y+1] = ["Proie", Apro, (Epro - 1)]
                 elif case == 5:
                     config[x][y].append("Reproduit")
                     config[x][y][2] -= 3
                     config[x][y+1].append("Reproduit")
                     config[x][y+1][2] -= 3
-                    case = direction(x, y, 0)
+                    case = direction(x, y, 0, "Déplacement")
                     if case == 0:
                         pass
                     elif case == 1:
-                        config[x-1][y-1] = ["Proie", Apro, Epro]
+                        config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 2:
-                        config[x-1][y] = ["Proie", Apro, Epro]
+                        config[x-1][y] = ["Proie", Apro, (Epro - 1)]
                     elif case == 3:
-                        config[x-1][y+1] = ["Proie", Apro, Epro]
+                        config[x-1][y+1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 4:
-                        config[x][y-1] = ["Proie", Apro, Epro]
+                        config[x][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 6:
-                        config[x+1][y-1] = ["Proie", Apro, Epro]
+                        config[x+1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 7:
-                        config[x+1][y] = ["Proie", Apro, Epro]
+                        config[x+1][y] = ["Proie", Apro, (Epro - 1)]
                     elif case == 8:
-                        config[x+1][y+1] = ["Proie", Apro, Epro]
+                        config[x+1][y+1] = ["Proie", Apro, (Epro - 1)]
                 elif case == 6:
                     config[x][y].append("Reproduit")
                     config[x][y][2] -= 3
                     config[x+1][y-1].append("Reproduit")
                     config[x+1][y-1][2] -= 3
-                    case = direction(x, y, 0)
+                    case = direction(x, y, 0, "Déplacement")
                     if case == 0:
                         pass
                     elif case == 1:
-                        config[x-1][y-1] = ["Proie", Apro, Epro]
+                        config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 2:
-                        config[x-1][y] = ["Proie", Apro, Epro]
+                        config[x-1][y] = ["Proie", Apro, (Epro - 1)]
                     elif case == 3:
-                        config[x-1][y+1] = ["Proie", Apro, Epro]
+                        config[x-1][y+1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 4:
-                        config[x][y-1] = ["Proie", Apro, Epro]
+                        config[x][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 5:
-                        config[x][y+1] = ["Proie", Apro, Epro]
+                        config[x][y+1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 7:
-                        config[x+1][y] = ["Proie", Apro, Epro]
+                        config[x+1][y] = ["Proie", Apro, (Epro - 1)]
                     elif case == 8:
-                        config[x+1][y+1] = ["Proie", Apro, Epro]
+                        config[x+1][y+1] = ["Proie", Apro, (Epro - 1)]
                 elif case == 7:
                     config[x][y].append("Reproduit")
                     config[x][y][2] -= 3
                     config[x+1][y].append("Reproduit")
                     config[x+1][y][2] -= 3
-                    case = direction(x, y, 0)
+                    case = direction(x, y, 0, "Déplacement")
                     if case == 0:
                         pass
                     elif case == 1:
-                        config[x-1][y-1] = ["Proie", Apro, Epro]
+                        config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 2:
-                        config[x-1][y] = ["Proie", Apro, Epro]
+                        config[x-1][y] = ["Proie", Apro, (Epro - 1)]
                     elif case == 3:
-                        config[x-1][y+1] = ["Proie", Apro, Epro]
+                        config[x-1][y+1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 4:
-                        config[x][y-1] = ["Proie", Apro, Epro]
+                        config[x][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 5:
-                        config[x][y+1] = ["Proie", Apro, Epro]
+                        config[x][y+1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 6:
-                        config[x+1][y-1] = ["Proie", Apro, Epro]
+                        config[x+1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 8:
-                        config[x+1][y+1] = ["Proie", Apro, Epro]
+                        config[x+1][y+1] = ["Proie", Apro, (Epro - 1)]
                 elif case == 8:
                     config[x][y].append("Reproduit")
                     config[x][y][2] -= 3
                     config[x+1][y+1].append("Reproduit")
                     config[x+1][y+1][2] -= 3
-                    case = direction(x, y, 0)
+                    case = direction(x, y, 0, "Déplacement")
                     if case == 0:
                         pass
                     elif case == 1:
-                        config[x-1][y-1] = ["Proie", Apro, Epro]
+                        config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 2:
-                        config[x-1][y] = ["Proie", Apro, Epro]
+                        config[x-1][y] = ["Proie", Apro, (Epro - 1)]
                     elif case == 3:
-                        config[x-1][y+1] = ["Proie", Apro, Epro]
+                        config[x-1][y+1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 4:
-                        config[x][y-1] = ["Proie", Apro, Epro]
+                        config[x][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 5:
-                        config[x][y+1] = ["Proie", Apro, Epro]
+                        config[x][y+1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 6:
-                        config[x+1][y-1] = ["Proie", Apro, Epro]
+                        config[x+1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 7:
-                        config[x+1][y] = ["Proie", Apro, Epro]
+                        config[x+1][y] = ["Proie", Apro, (Epro - 1)]
 
 
 # Reproduction des prédateurs
 def reproduction_predateurs():
-    """Pour chaque prédateur, s'il possède une énergie supérieure ou égale à Erepro, un prédateur apparaît à un endroit aléatoire sur la grille"""
+    """Pour chaque prédateur, s'il possède une énergie supérieure ou égale à Erepro, un nouveau prédateur apparaît à un endroit aléatoire sur la grille."""
     global config
     for x in range(1, N + 1):
         for y in range(1, N + 1):
@@ -470,21 +491,21 @@ def reproduction_predateurs():
                 while r: # Tant que r == True
                     x, y = rd.randint(1, N + 1), rd.randint(1, N + 1) # Génération de coordonnées aléatoires
                     if config[x][y] == 0: # Si la case à ces coordonnées est vide
-                        config[x][y] = ["Prédateur", Apro, Epre] # Ajouter un prédateur
+                        config[x][y] = ["Prédateur", Apre, Epre] # Ajouter un prédateur (Apre le nombre de tours d'espérance de vie et Epre l'énergie du prédateur)
                         r = False # Variable pour arrêter la boucle
 
 
 # Déplacement et chasse des prédateurs
 def chasse():
-    """Déplace les prédateurs sur une case adjacente, en priorité une case où se trouve une proie"""
+    """Déplace les prédateurs sur une case adjacente, en priorité une case où se trouve une proie."""
     global config
     for x in range(1, N + 1):
         for y in range(1, N + 1):
-            if type(config[x][y]) == list and config[x][y][0] == "Prédateur" and config[x][y][-1] != "Déplacé" : # Seulement si c'est un prédateur et qu'il n'a pas déjà effectué un déplacement pendant ce tour
-                case = direction(x, y, "Proie") # Retourner une case adjacente aléatoire où se situe une proie
+            if type(config[x][y]) == list and config[x][y][0] == "Prédateur" and config[x][y][-1] != "Déplacé" : # Seulement si c'est un prédateur et qu'il n'a pas déjà effectué de déplacement pendant ce tour
+                case = direction(x, y, "Proie", "Déplacement") # Retourner une case adjacente aléatoire où se situe une proie
                 if case == 0: # S'il n'y a pas de proie à côté
-                    case = direction(x, y, 0) # Cherche une case vide adjacente aléatoire
-                    if case == 0: # S'il n'y en a pas non plus
+                    case = direction(x, y, 0, "Déplacement") # Cherche une case vide adjacente aléatoire
+                    if case == 0: # S'il n'y a pas de case vide non plus
                         break # Annuler la boucle
                     elif case == 1: # Si la case 1 est vide
                         config[x-1][y-1] = config[x][y][:] # Copie de la liste sur la nouvelle position
@@ -562,9 +583,9 @@ def chasse():
 
 # Compter le nombre d'animaux
 def compter_animaux():
-    """Compte le nombre total d'animaux, le nombre de proies et le nombre de prédateurs"""
+    """Compte le nombre total d'animaux, le nombre de proies et le nombre de prédateurs."""
     global nbre_animaux, nbre_proies, nbre_predateurs
-    nbre_animaux, nbre_proies, nbre_predateurs = 0, 0, 0
+    nbre_animaux = nbre_proies = nbre_predateurs = 0
     for x in range(1, N + 1):
         for y in range(1, N + 1):
             if type(config[x][y]) == list: # Si c'est une liste (donc un animal)
@@ -580,7 +601,7 @@ def compter_animaux():
 
 # Tour suivant
 def tour_suivant():
-    """Fait passer les tours (modification de l'âge, de l'énergie, déplacement et reproduction des animaux)"""
+    """Fait passer les tours (modification de l'âge, de l'énergie et déplacement et reproduction)."""
     global config, tour, sauv_validee, nbre_animaux, arret
 
     vie_energie() # Modification de l'espérance de vie et de l'énergie des animaux
@@ -589,7 +610,7 @@ def tour_suivant():
     deplacement_proies() # Déplacement des proies
     chasse() # Déplacement et chasse des prédateurs
 
-    # Boucle pour supprimer les termes "Reproduit" et "Déplacé" à la fin de chaque liste une fois que tous les déplacements/reproductions de ce tour on été effectués
+    # Boucle pour supprimer les termes "Reproduit" et "Déplacé" à la fin de chaque liste une fois que tous les déplacements/reproductions de ce tour ont été effectués
     for x in range(1, N + 1):
         for y in range(1, N + 1):
             if type(config[x][y]) == list and config[x][y].count("Reproduit") > 0: # Seulement si c'est une liste (donc un animal) et qu'elle contient le terme "Reproduit"
@@ -597,7 +618,7 @@ def tour_suivant():
             if type(config[x][y]) == list and config[x][y].count("Déplacé") > 0: # Seulement si c'est une liste (donc un animal) et qu'elle contient le terme "Déplacé"
                 config[x][y].remove("Déplacé") # Supprimer le terme "Déplacé" de la liste
 
-    affiche_grille(config) # Actualisation de la grille
+    affiche_grille(config) # Actuale la grille
     tour += 1 # Ajout d'un tour au compteur
     label_tours.configure(text = ("Tour", tour)) # Actualise le texte du numéro de tour
     compter_animaux() # Compter le nombre d'animaux
@@ -613,7 +634,7 @@ def tour_suivant():
 
 # Commencer/arrêter le passage des tours
 def commencer():
-    """Démarre ou arrête le passage des tours"""
+    """Démarre ou arrête le passage des tours."""
     global arret, nbre_animaux
     compter_animaux() # Compter le nombre d'animaux
     if arret == True and nbre_animaux > 0: # Si la simulation est en pause et qu'il y a des animaux
@@ -628,22 +649,25 @@ def commencer():
 
 # Passage des tours
 def passage_tours():
-    """Fait passer les tours"""
+    """Lance la fonction de passage des tours toutes les [CHRONO] millisecondes."""
     global var_chrono
     var_chrono = canvas.after(CHRONO, tour_suivant) # La fonction tour_suivant est lancée toutes les [CHRONO] ms
 
 
 # Réinitialiser la matrice
 def reinitialiser():
-    """Réinitialise la matrice"""
+    """Réinitialise la matrice."""
     global arret, tour, sauv_validee
     init_grille() # Création de la grille de départ
     init_proies() # Ajout de Npro proies à des coordonnées aléatoires
     init_prédateurs() # Ajout de Npre prédateurs à des coordonnées aléatoires
     if not arret: # Si la simulation est en cours
         arret = True # Arrêter la simulation
-        bouton_start.configure(text = "Commencer") # Changer le texte du bouton "start" en "Arrêter"
+        bouton_start.configure(text = "Commencer") # Changer le texte du bouton start en "Arrêter"
+        canvas.after_cancel(var_chrono) # Arrêter le passage des tours
     tour = 0 # Réinitialise le numéro du tour
+    label_tours.configure(text = ("Tour", tour)) # Actualise le texte du numéro de tour
+    compter_animaux() # Actualiser le nombre d'animaux
     if sauv_validee: # Si le message de validation de la sauvegarde est affiché
         sauv_validee = False # Le supprimer (car la matrice affichée n'est plus celle qui a été sauvegardée dans le fichier)
         label_sauv_validee.configure(text = "") # Supprimer le texte "Sauvegarde effectuée"
@@ -651,58 +675,66 @@ def reinitialiser():
 
 # Sauvegarder la matrice
 def sauvegarder():
-    """Sauvegarde la matrice actuelle dans un fichier"""
+    """Sauvegarde la matrice actuelle dans le fichier "sauvegarde"."""
     global sauv_validee
-    fic = open("sauvegarde", "w")
-    for x in range(1, N + 1):
-        for y in range(1, N + 1):
+    fic = open("sauvegarde", "w") # Ouvrir le fichier "sauvegarde" en écriture
+    fic.write(str(tour)) # Écrire le numéro du tour au début du fichier
+    fic.write("\n\n") # Laisser la deuxième ligne vide
+    for x in range(1, N + 1): # Pour chaque abscisse
+        for y in range(1, N + 1): # Pour chaque ordonnée
             if config[x][y] == 0: # Si l'élément de la matrice est égal à 0
                 fic.write(str(config[x][y])) # L'écrire sur cette ligne
                 fic.write("\n") # Ajouter un retour à la ligne pour que le prochain élément soit sur la ligne suivante
             else: # Si c'est la liste d'un animal
-                fic.write("ANIMAL\n") # Écrire "ANIMAL" sur cette ligne (avec le retour à la ligne)
+                fic.write("ANIMAL\n") # Écrire "ANIMAL" sur cette ligne (avec le retour à la ligne) pour signaler le début de la liste d'un animal
                 for i in range(0, len(config[x][y])): # Pour chaque élément de la liste de l'animal
                     fic.write(str(config[x][y][i])) # L'ajouter sur la ligne suivante
                     fic.write("\n")
-                fic.write("FIN\n") # Puis écrire "FIN" sur la ligne suivante
-    sauv_validee = True
+                fic.write("FIN\n") # Puis écrire "FIN" sur la ligne suivante pour signaler la fin de la liste d'un animal
+    sauv_validee = True # Variable pour indiquer que la matrice actuelle est sauvegardée
     label_sauv_validee.configure(text = "Sauvegarde effectuée") # Afficher le texte "Sauvegarde effectuée" en dessous du bouton
-    fic.close()
+    fic.close() # Fermer le fichier
 
 
 # Charger la matrice sauvegardée
 def charger():
-    """Charge la configuration sauvegardée et la retourne si elle a même valeur N que la config courante, sinon retourne config vide"""
-    global arret
-    fic = open("sauvegarde", "r")
+    """Charge la configuration sauvegardée dans le fichier "sauvegarde"."""
+    global arret, tour
+    # Réinitialisation de la matrice
     config = [[0 for x in range(N + 2)] for y in range(N + 2)] # Création de la matrice de taille N + 2 pour les bords
     config[0] = ["#" for x in range(N + 2)] # Ajout de "#" sur le bord gauche (invisible)
     config[-1] = ["#" for x in range(N + 2)] # Ajout de "#" sur le bord droit (invisible)
     for x in range(1, N + 1): # Ajout de "#" en haut et en bas de chaque colonne
         config[x][0] = "#"
         config[x][-1] = "#"
-    x = y = 1 # On démarre avec abscisses et ordonnées égales à 1 pour ne pas compter les bords
-    cpt = 0
+
+    fic = open("sauvegarde", "r") # Ouvrir le fichier "sauvegarde" en lecture
+    x = y = 1 # On démarre avec une abscisse et une ordonnée égales à 1 pour ne pas compter les bords
+    animal = False # Variable pour indiquer si la ligne fait partie de la liste d'un animal
+    recup_tour = True # Variable pour récupérer le numéro de tour
     for ligne in fic: # Pour chaque ligne dans le fichier de sauvegarde
-        if ligne == "0\n": # Si la ligne est un 0 (avec \n à la fin pour le saut de ligne présent)
+        if recup_tour:
+            tour = int(ligne) # Récupère le numéro de tour
+            recup_tour = False
+        elif ligne == "0\n" and not animal: # Si la ligne est un 0 (avec \n à la fin pour le saut de ligne présent) et que le 0 n'est pas dans une liste d'animal
             config[x][y] = 0 # La case correspondante dans la matrice sera un 0
             y += 1 # On ajoute 1 à l'ordonnée pour la prochaine ligne du fichier
-            if y == N + 1: # Si l'ordonnée est supérieur à la taille de la matrice
+            if y == N + 1: # Si l'ordonnée est supérieure à la taille de la matrice
                 y = 1 # On la réinitialise à 1 (on revient à la première ligne)
-                x += 1 # Et on ajout 1 à l'abscisse (on passe à la colonne à droite)
-        if ligne == "ANIMAL\n": # (cf l'organisation du fichier sauvegarde) Si la ligne est "ANIMAL" (avec le saut de ligne à la fin) 
-            cpt += 1 # On ajout 1 au compteur (on entre dans la liste d'un animal)
+                x += 1 # Et on ajoute 1 à l'abscisse (on passe à la colonne à droite)
+        if ligne == "ANIMAL\n": # Si la ligne est "ANIMAL" (avec le saut de ligne à la fin)
+            animal = True # On entre dans la liste d'un animal
             config[x][y] = [] # Création de la liste de l'animal
-        elif ligne == "FIN\n": # (cf l'organisation du fichier sauvegarde) Si la ligne n'est pas "FIN" (avec le saut de ligne à la fin) 
-            cpt = 0 # On remet le compteur à 0 (fin de la liste de l'animal)
+        elif ligne == "FIN\n": # Si la ligne est "FIN" (avec le saut de ligne à la fin) 
+            animal = False # Fin de la liste de l'animal
             y += 1 # On ajoute 1 à l'ordonnée pour la prochaine ligne du fichier
-            if y == N + 1: # Si l'ordonnée est supérieur à la taille de la matrice
+            if y == N + 1: # Si l'ordonnée est supérieure à la taille de la matrice
                 y = 1 # On la réinitialise à 1 (on revient à la première ligne)
-                x += 1 # Et on ajout 1 à l'abscisse (on passe à la colonne à droite)
-        elif cpt == 1: # Si le compteur est égal à 1 (c'est la liste d'un animal)
+                x += 1 # Et on ajoute 1 à l'abscisse (on passe à la colonne à droite)
+        elif animal: # Si la ligne est dans la liste d'un animal
             if ligne == "Proie\n": # Si la ligne est "Proie"
                 config[x][y].append("Proie") # On ajoute "Proie" dans la liste de l'animal
-            elif ligne == "Prédateur\n": # Idem
+            elif ligne == "Prédateur\n":
                 config[x][y].append("Prédateur")
             elif ligne == "Reproduit\n":
                 config[x][y].append("Reproduit")
@@ -710,12 +742,14 @@ def charger():
                 config[x][y].append("Déplacé")
             else: # Si c'est aucun des 4 termes possibles (donc c'est un nombre)
                 config[x][y].append(int(ligne)) # On ajoute le nombre dans la liste
-    fic.close()
-    affiche_grille(config)
+    fic.close() # Fermer le fichier
+    affiche_grille(config) # Actualise la grille
+    label_tours.configure(text = ("Tour", tour)) # Actualise le texte du numéro de tour récupéré dans le fichier
     compter_animaux() # Compter le nombre d'animaux
     if not arret: # Si la simulation est en cours
         arret = True # Arrêter la simulation
-        bouton_start.configure(text = "Commencer") # Changer le texte du bouton "start" en "Arrêter"
+        bouton_start.configure(text = "Commencer") # Changer le texte du bouton start en "Arrêter"
+        canvas.after_cancel(var_chrono) # Arrêter le passage des tours
 
 
 
@@ -726,11 +760,11 @@ racine = tk.Tk()
 racine.title("Simulation proies-prédateurs")
 canvas = tk.Canvas(racine, width = LARGEUR, height = HAUTEUR)
 bouton_start = tk.Button(racine, text = "Commencer", command = commencer, width = 10, font = ("bold", 12)) # Bouton pour commencer ou arrêter le passage des tours
-bouton_reinit = tk.Button(racine, text = "Réinitialiser", command = reinitialiser, font = ("bold", 10)) # Bouton pour commencer ou arrêter le passage des tours
-bouton_sauver = tk.Button(racine, text = "Sauvegarder", command = sauvegarder, width = 10, font = ("bold", 10)) # Bouton pour commencer ou arrêter le passage des tours
-bouton_charger = tk.Button(racine, text = "Charger", command = charger, font = ("bold", 10)) # Bouton pour commencer ou arrêter le passage des tours
+bouton_reinit = tk.Button(racine, text = "Réinitialiser", command = reinitialiser, font = ("bold", 10)) # Bouton pour réinitialiser la matrice
+bouton_sauver = tk.Button(racine, text = "Sauvegarder", command = sauvegarder, width = 10, font = ("bold", 10)) # Bouton pour sauvegarder la matrice actuelle
+bouton_charger = tk.Button(racine, text = "Charger", command = charger, font = ("bold", 10)) # Bouton pour charger la matrice sauvegardée
 label_tours = tk.Label(racine, text = ("Tour", tour), font = ("bold", 15)) # Texte pour afficher le numéro du tour actuel
-label_sauv_validee = tk.Label(racine, width = 30, font = ("bold", 8)) # Texte pour indiquer que la matrice actuellement affichée est sauvegardée dans le fichier
+label_sauv_validee = tk.Label(racine, width = 30, font = ("bold", 8)) # Texte pour indiquer que la matrice actuellement affichée est sauvegardée dans le fichier "sauvegarde"
 label_animaux = tk.Label(racine, text = ("Nombre d'animaux :", (Npro + Npre)), font = ("bold", 8)) # Texte pour indiquer le nombre d'animaux en vie
 label_proies = tk.Label(racine, text = ("Nombre de proies :", Npro), font = ("bold", 8)) # Texte pour indiquer le nombre de proies en vie
 label_predateurs = tk.Label(racine, text = ("Nombre de prédateurs :", Npre), font = ("bold", 8))  # Texte pour indiquer le nombre de prédateurs en vie
