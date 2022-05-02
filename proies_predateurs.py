@@ -8,6 +8,15 @@
 ##############################################################
 
 
+###### Problèmes majeurs restants : ############################################################
+# -> Les prédateurs semblent avoir du mal à aller en priorité sur les case adjacentes
+# où se situent des proies
+# -> Après le chargement d'une matrice sauvegardée, appuyer sur le bouton "Commencer" reprend
+# la matrice précédente. Sûrement un problème au niveau de la commande .after() qui ne s'annule
+# pas vraiment avec .after_cancel()
+################################################################################################
+
+
 
 ### Import des librairies
 
@@ -26,8 +35,8 @@ HAUTEUR_CASE = LARGEUR_CASE # Hauteur des cases
 
 CHRONO = 500 # Temps en millisecondes entre chaque tour
 
-MIAM = 5 # Niveau d'énergie gagné lorsqu'un prédateur mange une proie
-FLAIR = 5 # Distance maximale à laquelle un prédateur peut sentir un proie
+MIAM = 10 # Niveau d'énergie gagné lorsqu'un prédateur mange une proie
+FLAIR = 10 # Distance maximale à laquelle un prédateur peut sentir un proie
 
 
 
@@ -37,16 +46,18 @@ tour = 0 # Numéro du tour
 arret = True # Variable pour arrêter le passage des tours
 var_chrono = 0 # Variable pour le compte à rebours entre chaque tour
 
-Npro = 30 # Nombre initial de proies (Npro proies apparaissent au début)
+Npro = 150 # Nombre initial de proies (Npro proies apparaissent au début)
 Apro = 10 # Espérance de vie des proies en nombre de tours
 Epro = 2 # Énergie des proies (augmente de 1 par tour avec Epro en plafond. Une énergie maximale (égale à Epro) est nécessaire pour qu'une proie puisse se reproduire. Epro revient à 0 à chaque reproduction.)
 
-Npre = 2 # Nombre initial de prédateurs (Npre prédateurs apparaissent au début)
+Npre = 10 # Nombre initial de prédateurs (Npre prédateurs apparaissent au début)
 Apre = 15 # Espérance de vie des prédateurs en nombre de tours
-Epre = 12 # Énergie des prédateurs (baisse de 1 par tour, s'il elle atteint zéro, le prédateur meurt de faim)
-Erepro = 15 # Niveau d'énergie nécessaire pour qu'un prédateur puisse se reproduire
+Epre = 20 # Énergie des prédateurs (baisse de 1 par tour, s'il elle atteint zéro, le prédateur meurt de faim)
+Erepro = 25 # Niveau d'énergie nécessaire pour qu'un prédateur puisse se reproduire
 
 sauv_validee = False # Variable pour afficher si la matrice actuelle est sauvegardée
+
+pas_de_proie = False # Variable pour le déplacement des prédateurs
 
 
 
@@ -131,69 +142,108 @@ def init_prédateurs():
 # Retourne une case adjacente aléatoire selon la condition demandée
 def direction(x, y, n, e):
     """Retourne une case adjacente aléatoire. n = 0 ou "Proie" ou "Prédateur" et e = "Déplacement" (= chasse pour les prédateurs) ou "Reproduction"."""
+    global pas_de_proie
     case_1 = case_2 = case_3 = case_4 = case_5 = case_6 = case_7 = case_8 = False # Création des variables pour chaque case (False = case indisponible, True = case disponible)
 
     if e == "Déplacement": # Si on cherche une case pour un déplacement/chasse
         # Vérifier pour chaque case (8 directions) que ce n'est pas une liste et que c'est égal à n (n = 0)
-        if not type(config[x-1][y-1]) == list and config[x-1][y-1] == n:
-            case_1 = True # Case 1 : en haut à gauche
-        if not type(config[x-1][y-1]) == list and config[x-1][y] == n:
-            case_2 = True # Case 2 : à gauche
-        if not type(config[x-1][y+1]) == list and config[x-1][y+1] == n:
-            case_3 = True # Case 3 : en bas à gauche
-        if not type(config[x][y-1]) == list and config[x][y-1] == n:
-            case_4 = True # Case 4 : en haut
-        if not type(config[x][y+1]) == list and config[x][y+1] == n:
-            case_5 = True # Case 5 : en bas
-        if not type(config[x+1][y-1]) == list and config[x+1][y-1] == n:
-            case_6 = True # Case 6 : en haut à droite
-        if not type(config[x+1][y]) == list and config[x+1][y] == n:
-            case_7 = True # Case 7 : à droite
-        if not type(config[x+1][y+1]) == list and config[x+1][y+1] == n:
-            case_8 = True # Case 8 : en bas à droite
+        if type(config[x][y]) == list and config[x][y][0] == "Proie" or config[x][y][0] == "Prédateur" and n == 0:
+            if not type(config[x-1][y-1]) == list and config[x-1][y-1] == 0:
+                case_1 = True # Case 1 : en haut à gauche
+            if not type(config[x-1][y-1]) == list and config[x-1][y] == 0:
+                case_2 = True # Case 2 : à gauche
+            if not type(config[x-1][y+1]) == list and config[x-1][y+1] == 0:
+                case_3 = True # Case 3 : en bas à gauche
+            if not type(config[x][y-1]) == list and config[x][y-1] == 0:
+                case_4 = True # Case 4 : en haut
+            if not type(config[x][y+1]) == list and config[x][y+1] == 0:
+                case_5 = True # Case 5 : en bas
+            if not type(config[x+1][y-1]) == list and config[x+1][y-1] == 0:
+                case_6 = True # Case 6 : en haut à droite
+            if not type(config[x+1][y]) == list and config[x+1][y] == 0:
+                case_7 = True # Case 7 : à droite
+            if not type(config[x+1][y+1]) == list and config[x+1][y+1] == 0:
+                case_8 = True # Case 8 : en bas à droite
 
-        # Vérifier pour chaque case (8 directions) que c'est une liste et que son premier terme est égal à n (n = "Proie" ou "Prédateur")
-        if type(config[x-1][y-1]) == list and config[x-1][y-1][0] == n:
-            case_1 = True
-        if type(config[x-1][y]) == list and config[x-1][y][0] == n:
-            case_2 = True
-        if type(config[x-1][y+1]) == list and config[x-1][y+1][0] == n:
-            case_3 = True
-        if type(config[x][y-1]) == list and config[x][y-1][0] == n:
-            case_4 = True
-        if type(config[x][y+1]) == list and config[x][y+1][0] == n:
-            case_5 = True
-        if type(config[x+1][y-1]) == list and config[x+1][y-1][0] == n:
-            case_6 = True
-        if type(config[x+1][y]) == list and config[x+1][y][0] == n:
-            case_7 = True
-        if type(config[x+1][y+1]) == list and config[x+1][y+1][0] == n:
-            case_8 = True
+        if type(config[x][y]) == list and config[x][y][0] == "Prédateur" and n != 0: # Si c'est un prédateur
+            if type(config[x-1][y-1]) == list and config[x-1][y-1][0] == "Proie": # Vérifier dans chaque direction s'il y a une proie
+                case_1 = True
+            if type(config[x-1][y]) == list and config[x-1][y][0] == "Proie":
+                case_2 = True
+            if type(config[x-1][y+1]) == list and config[x-1][y+1][0] == "Proie":
+                case_3 = True
+            if type(config[x][y-1]) == list and config[x][y-1][0] == "Proie":
+                case_4 = True
+            if type(config[x][y+1]) == list and config[x][y+1][0] == "Proie":
+                case_5 = True
+            if type(config[x+1][y-1]) == list and config[x+1][y-1][0] == "Proie":
+                case_6 = True
+            if type(config[x+1][y]) == list and config[x+1][y][0] == "Proie":
+                case_7 = True
+            if type(config[x+1][y+1]) == list and config[x+1][y+1][0] == "Proie":
+                case_8 = True
+            # S'il n'y a aucune proie à côté du prédateur
+            if case_1 == case_2 == case_3 == case_4 == case_5 == case_6 == case_7 == case_8 == False:
+                pas_de_proie = True
+                for i in range(1, (FLAIR + 1)):
+                    for j in range(1, (FLAIR + 1)):
+                        if x - i > 0 and y - j > 0: # Pour éviter que ça cherche des listes qui n'existent pas (et donc que ça fasse une erreur)
+                            if type(config[x-i][y-j]) == list and config[x-i][y-j][0] == "Proie": # S'il y a une proie pas loin
+                                if not type(config[x-1][y-1]) == list and config[x-1][y-1] == 0: # Et qu'il y a une case de libre dans cette direction
+                                    case_1 = True # La case est disponible
+                        if x - i > 0:
+                            if type(config[x-i][y]) == list and config[x-i][y][0] == "Proie":
+                                if not type(config[x-1][y]) == list and config[x-1][y] == 0:
+                                    case_2 = True
+                        if x - i > 0 and y + j < N:
+                            if type(config[x-i][y+j]) == list and config[x-i][y+j][0] == "Proie":
+                                if not type(config[x-1][y+1]) == list and config[x-1][y+1] == 0:
+                                    case_3 = True
+                        if y - j > 0:
+                            if type(config[x][y-j]) == list and config[x][y-j][0] == "Proie":
+                                if not type(config[x][y-1]) == list and config[x][y-1] == 0:
+                                    case_4 = True
+                        if y + j < N:
+                            if type(config[x][y+j]) == list and config[x][y+j][0] == "Proie":
+                                if not type(config[x][y+1]) == list and config[x][y+1] == 0:
+                                    case_5 = True
+                        if x + i < N and y - j > 0:
+                            if type(config[x+i][y-j]) == list and config[x+i][y-j][0] == "Proie":
+                                if not type(config[x+1][y-1]) == list and config[x+1][y-1] == 0:
+                                    case_6 = True
+                        if x + i < N:
+                            if type(config[x+i][y]) == list and config[x+i][y][0] == "Proie":
+                                if not type(config[x+1][y]) == list and config[x+1][y] == 0:
+                                    case_7 = True
+                        if x + i < N and y + j < N:
+                            if type(config[x+i][y+j]) == list and config[x+i][y+j][0] == "Proie":
+                                if not type(config[x+1][y+1]) == list and config[x+1][y+1] == 0:
+                                    case_8 = True
 
     if e == "Reproduction": # Si on cherche une case pour une reproduction
-        # Vérifier pour chaque case (8 directions) que c'est une liste, que son premier terme est égal à n (n = "Proie" ou "Prédateur"), que la proie présente ne s'est pas déjà reproduite et que son énergie est supérieur où égale à l'énergie maximale
-        if type(config[x-1][y-1]) == list and config[x-1][y-1][0] == n and not config[x-1][y-1].count("Reproduit") > 0 and config[x-1][y-1][2] >= Epro:
+        # Vérifier pour chaque case (8 directions) que c'est une proie, que celle-ci a une énergie supérieure où égale à l'énergie maximale et qu'elle ne s'est pas déjà reproduite pendant ce tour
+        if type(config[x-1][y-1]) == list and config[x-1][y-1][0] == "Proie" and config[x-1][y-1][2] >= Epro and config[x-1][y-1].count("Reproduit") == 0:
             case_1 = True
-        if type(config[x-1][y]) == list and config[x-1][y][0] == n and not config[x-1][y].count("Reproduit") > 0 and config[x-1][y][2] >= Epro:
+        if type(config[x-1][y]) == list and config[x-1][y][0] == "Proie" and config[x-1][y][2] >= Epro and config[x-1][y].count("Reproduit") == 0:
             case_2 = True
-        if type(config[x-1][y+1]) == list and config[x-1][y+1][0] == n and not config[x-1][y+1].count("Reproduit") > 0 and config[x-1][y+1][2] >= Epro:
+        if type(config[x-1][y+1]) == list and config[x-1][y+1][0] == "Proie" and config[x-1][y+1][2] >= Epro and config[x-1][y+1].count("Reproduit") == 0:
             case_3 = True
-        if type(config[x][y-1]) == list and config[x][y-1][0] == n and not config[x][y-1].count("Reproduit") > 0 and config[x][y-1][2] >= Epro:
+        if type(config[x][y-1]) == list and config[x][y-1][0] == "Proie" and config[x][y-1][2] >= Epro and config[x][y-1].count("Reproduit") == 0:
             case_4 = True
-        if type(config[x][y+1]) == list and config[x][y+1][0] == n and not config[x][y+1].count("Reproduit") > 0 and config[x][y+1][2] >= Epro:
+        if type(config[x][y+1]) == list and config[x][y+1][0] == "Proie" and config[x][y+1][2] >= Epro and config[x][y+1].count("Reproduit") == 0:
             case_5 = True
-        if type(config[x+1][y-1]) == list and config[x+1][y-1][0] == n and not config[x+1][y-1].count("Reproduit") > 0 and config[x+1][y-1][2] >= Epro:
+        if type(config[x+1][y-1]) == list and config[x+1][y-1][0] == "Proie" and config[x+1][y-1][2] >= Epro and config[x+1][y-1].count("Reproduit") == 0:
             case_6 = True
-        if type(config[x+1][y]) == list and config[x+1][y][0] == n and not config[x+1][y].count("Reproduit") > 0 and config[x+1][y][2] >= Epro:
+        if type(config[x+1][y]) == list and config[x+1][y][0] == "Proie" and config[x+1][y][2] >= Epro and config[x+1][y].count("Reproduit") == 0:
             case_7 = True
-        if type(config[x+1][y+1]) == list and config[x+1][y+1][0] == n and not config[x+1][y+1].count("Reproduit") > 0 and config[x+1][y+1][2] >= Epro:
+        if type(config[x+1][y+1]) == list and config[x+1][y+1][0] == "Proie" and config[x+1][y+1][2] >= Epro and config[x+1][y+1].count("Reproduit") == 0:
             case_8 = True
 
 
 
     if case_1 == case_2 == case_3 == case_4 == case_5 == case_6 == case_7 == case_8 == False:
         case = 0 # Si aucune case n'est disponible, retourner case = 0
-    else:
+    else: # Sinon, on choisit une des cases disponibles aléatoirement
         d = True # Variable pour arrêter la boucle
         while d: # Tant que d == True
             x = rd.randint(1, 8) # Génération d'un chiffre aléatoire entre 1 et 8 pour choisir la direction aléatoirement
@@ -253,7 +303,7 @@ def deplacement_proies():
     global config
     for x in range(1, N + 1):
         for y in range(1, N + 1):
-            if type(config[x][y]) == list and config[x][y][0] == "Proie" and config[x][y][-1] != "Déplacé" : # Seulement si c'est une proie et qu'elle n'a pas déjà effectué un déplacement pendant ce tour
+            if type(config[x][y]) == list and config[x][y][0] == "Proie" and config[x][y].count("Déplacé") == 0: # Seulement si c'est une proie et qu'elle n'a pas déjà effectué un déplacement pendant ce tour
                 case = direction(x, y, 0, "Déplacement") # Obtenir une case aléatoire pour un déplacement
                 if case == 0: # Si aucune case disponible
                     break # Annuler la boucle
@@ -297,7 +347,7 @@ def reproduction_proies():
     global config
     for x in range(1, N + 1):
         for y in range(1, N + 1):
-            if type(config[x][y]) == list and config[x][y][0] == "Proie" and config[x][y][-1] != "Reproduit" and config[x][y][2] >= Epro: # Seulement si c'est une proie, qu'elle ne s'est pas déjà reproduite pendant ce tour et que son niveau d'énergie est maximal (égal à Epro)
+            if type(config[x][y]) == list and config[x][y][0] == "Proie" and config[x][y][2] >= Epro and config[x][y].count("Reproduit") == 0: # Seulement si c'est une proie, qu'elle ne s'est pas déjà reproduite pendant ce tour et que son niveau d'énergie est maximal (égal à Epro)
                 case = direction(x, y, "Proie", "Reproduction") # Obtenir une case aléatoire ou se trouve une proie pour une reproduction
                 if case == 0: # Si aucune case disponible
                     break # Annuler la boucle
@@ -485,7 +535,7 @@ def reproduction_predateurs():
     global config
     for x in range(1, N + 1):
         for y in range(1, N + 1):
-            if type(config[x][y]) == list and config[x][y][0] == "Prédateur" and config[x][y][-1] != "Reproduit" and config[x][y][2] >= Erepro: # Seulement si c'est un prédateur, qu'il ne s'est pas déjà reproduit pendant ce tour et que son niveau d'énergie est supérieur ou égal au niveau d'énergie Erepro nécessaire pour pouvoir se reproduire
+            if type(config[x][y]) == list and config[x][y][0] == "Prédateur" and config[x][y][2] >= Erepro and config[x][y].count("Reproduit") == 0: # Seulement si c'est un prédateur, qu'il ne s'est pas déjà reproduit pendant ce tour et que son niveau d'énergie est supérieur ou égal au niveau d'énergie Erepro nécessaire pour pouvoir se reproduire
                 config[x][y].append("Reproduit") # Ajouter le terme "Reproduit" à la fin de la liste pour éviter qu'il se reproduise deux fois dans le même tour
                 r = True # Variable pour arrêter la boucle
                 while r: # Tant que r == True
@@ -501,7 +551,7 @@ def chasse():
     global config
     for x in range(1, N + 1):
         for y in range(1, N + 1):
-            if type(config[x][y]) == list and config[x][y][0] == "Prédateur" and config[x][y][-1] != "Déplacé" : # Seulement si c'est un prédateur et qu'il n'a pas déjà effectué de déplacement pendant ce tour
+            if type(config[x][y]) == list and config[x][y][0] == "Prédateur" and config[x][y].count("Déplacé") == 0: # Seulement si c'est un prédateur et qu'il n'a pas déjà effectué de déplacement pendant ce tour
                 case = direction(x, y, "Proie", "Déplacement") # Retourner une case adjacente aléatoire où se situe une proie
                 if case == 0: # S'il n'y a pas de proie à côté
                     case = direction(x, y, 0, "Déplacement") # Cherche une case vide adjacente aléatoire
@@ -543,42 +593,50 @@ def chasse():
                     config[x-1][y-1] = config[x][y][:] # Copie de la liste sur la nouvelle position
                     config[x][y] = 0 # Suppression de la liste sur l'ancienne position
                     config[x-1][y-1].append("Déplacé") # Ajout du terme "Déplacé" à la fin de la liste pour éviter de déplacer le même animal 2 fois de suite
-                    config[x-1][y-1][2] += MIAM # Ajout de MIAM énergie à l'énergie du prédateur
+                    if not pas_de_proie: # Si le prédateur se déplace sur la case d'une proie
+                        config[x-1][y-1][2] += MIAM # Ajout de MIAM énergie à l'énergie du prédateur
                 elif case == 2:
                     config[x-1][y] = config[x][y][:]
                     config[x][y] = 0
                     config[x-1][y].append("Déplacé")
-                    config[x-1][y][2] += MIAM
+                    if not pas_de_proie:
+                        config[x-1][y][2] += MIAM
                 elif case == 3:
                     config[x-1][y+1] = config[x][y][:]
                     config[x][y] = 0
                     config[x-1][y+1].append("Déplacé")
-                    config[x-1][y+1][2] += MIAM
+                    if not pas_de_proie:
+                        config[x-1][y+1][2] += MIAM
                 elif case == 4:
                     config[x][y-1] = config[x][y][:]
                     config[x][y] = 0
                     config[x][y-1].append("Déplacé")
-                    config[x][y-1][2] += MIAM
+                    if not pas_de_proie:
+                        config[x][y-1][2] += MIAM
                 elif case == 5:
                     config[x][y+1] = config[x][y][:]
                     config[x][y] = 0
                     config[x][y+1].append("Déplacé")
-                    config[x][y+1][2] += MIAM
+                    if not pas_de_proie:
+                        config[x][y+1][2] += MIAM
                 elif case == 6:
                     config[x+1][y-1] = config[x][y][:]
                     config[x][y] = 0
                     config[x+1][y-1].append("Déplacé")
-                    config[x+1][y-1][2] += MIAM
+                    if not pas_de_proie:
+                        config[x+1][y-1][2] += MIAM
                 elif case == 7:
                     config[x+1][y] = config[x][y][:]
                     config[x][y] = 0
                     config[x+1][y].append("Déplacé")
-                    config[x+1][y][2] += MIAM
+                    if not pas_de_proie:
+                        config[x+1][y][2] += MIAM
                 elif case == 8:
                     config[x+1][y+1] = config[x][y][:]
                     config[x][y] = 0
                     config[x+1][y+1].append("Déplacé")
-                    config[x+1][y+1][2] += MIAM
+                    if not pas_de_proie:
+                        config[x+1][y+1][2] += MIAM
 
 
 # Compter le nombre d'animaux
@@ -765,9 +823,9 @@ bouton_sauver = tk.Button(racine, text = "Sauvegarder", command = sauvegarder, w
 bouton_charger = tk.Button(racine, text = "Charger", command = charger, font = ("bold", 10)) # Bouton pour charger la matrice sauvegardée
 label_tours = tk.Label(racine, text = ("Tour", tour), font = ("bold", 15)) # Texte pour afficher le numéro du tour actuel
 label_sauv_validee = tk.Label(racine, width = 30, font = ("bold", 8)) # Texte pour indiquer que la matrice actuellement affichée est sauvegardée dans le fichier "sauvegarde"
-label_animaux = tk.Label(racine, text = ("Nombre d'animaux :", (Npro + Npre)), font = ("bold", 8)) # Texte pour indiquer le nombre d'animaux en vie
-label_proies = tk.Label(racine, text = ("Nombre de proies :", Npro), font = ("bold", 8)) # Texte pour indiquer le nombre de proies en vie
-label_predateurs = tk.Label(racine, text = ("Nombre de prédateurs :", Npre), font = ("bold", 8))  # Texte pour indiquer le nombre de prédateurs en vie
+label_animaux = tk.Label(racine, text = ("Nombre d'animaux : " + str((Npro + Npre))), font = ("bold", 8)) # Texte pour indiquer le nombre d'animaux en vie
+label_proies = tk.Label(racine, text = ("Nombre de proies : " + str(Npro)), font = ("bold", 8)) # Texte pour indiquer le nombre de proies en vie
+label_predateurs = tk.Label(racine, text = ("Nombre de prédateurs : " + str(Npre)), font = ("bold", 8))  # Texte pour indiquer le nombre de prédateurs en vie
 
 # Fonctions
 init_grille() # Création de la grille de départ
