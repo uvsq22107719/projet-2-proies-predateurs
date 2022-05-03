@@ -8,12 +8,10 @@
 ##############################################################
 
 
-###### Problèmes majeurs restants : ############################################################
-# -> Les prédateurs semblent avoir du mal à aller en priorité sur les case adjacentes
-# où se situent des proies
-# -> Après le chargement d'une matrice sauvegardée, appuyer sur le bouton "Commencer" reprend
-# la matrice précédente. Sûrement un problème au niveau de la commande .after() qui ne s'annule
-# pas vraiment avec .after_cancel()
+###### Problème important restant : ############################################################
+#   Après le chargement d'une matrice sauvegardée, appuyer sur le bouton "Commencer" reprend
+# la matrice précédente. Peut-être un problème au niveau de la commande .after() qui ne s'annule
+# pas vraiment avec .after_cancel() ?
 ################################################################################################
 
 
@@ -35,8 +33,8 @@ HAUTEUR_CASE = LARGEUR_CASE # Hauteur des cases
 
 CHRONO = 500 # Temps en millisecondes entre chaque tour
 
-MIAM = 10 # Niveau d'énergie gagné lorsqu'un prédateur mange une proie
-FLAIR = 10 # Distance maximale à laquelle un prédateur peut sentir un proie
+MIAM = 5 # Niveau d'énergie gagné lorsqu'un prédateur mange une proie
+FLAIR = 5 # Nombre maximal de cases pour qu'un prédateur peut sentir un proie
 
 
 
@@ -46,14 +44,14 @@ tour = 0 # Numéro du tour
 arret = True # Variable pour arrêter le passage des tours
 var_chrono = 0 # Variable pour le compte à rebours entre chaque tour
 
-Npro = 150 # Nombre initial de proies (Npro proies apparaissent au début)
+Npro = 50 # Nombre initial de proies (Npro proies apparaissent au début)
 Apro = 10 # Espérance de vie des proies en nombre de tours
 Epro = 2 # Énergie des proies (augmente de 1 par tour avec Epro en plafond. Une énergie maximale (égale à Epro) est nécessaire pour qu'une proie puisse se reproduire. Epro revient à 0 à chaque reproduction.)
 
-Npre = 10 # Nombre initial de prédateurs (Npre prédateurs apparaissent au début)
+Npre = 3 # Nombre initial de prédateurs (Npre prédateurs apparaissent au début)
 Apre = 15 # Espérance de vie des prédateurs en nombre de tours
-Epre = 20 # Énergie des prédateurs (baisse de 1 par tour, s'il elle atteint zéro, le prédateur meurt de faim)
-Erepro = 25 # Niveau d'énergie nécessaire pour qu'un prédateur puisse se reproduire
+Epre = 10 # Énergie des prédateurs (baisse de 1 par tour, s'il elle atteint zéro, le prédateur meurt de faim)
+Erepro = 15 # Niveau d'énergie nécessaire pour qu'un prédateur puisse se reproduire
 
 sauv_validee = False # Variable pour afficher si la matrice actuelle est sauvegardée
 
@@ -71,7 +69,7 @@ def choix_couleur(n):
     else:
         if n[0] == "Proie": # Si c'est une proie
             return "yellow" # Couleur des proies
-        elif n[0] == "Prédateur": # Si c'est un prédateur
+        elif n[0] == "Predateur": # Si c'est un prédateur
             return "red" # Couleur des prédateurs
         else: # Si c'est autre chose
             return "grey"
@@ -134,20 +132,21 @@ def init_prédateurs():
     while cpt > 0:
         x, y = rd.randint(1, N + 1), rd.randint(1, N + 1) # Génération des coordonnées aléatoires
         if config[x][y] == 0: # Si c'est une case vide
-            config[x][y] = ["Prédateur", Apre, Epre] # Création d'une liste avec toutes les infos sur l'animal (ici c'est un prédateur avec Apre le nombre de tours d'espérance de vie puis Epre l'énergie du prédateur)
+            config[x][y] = ["Predateur", Apre, Epre] # Création d'une liste avec toutes les infos sur l'animal (ici c'est un prédateur avec Apre le nombre de tours d'espérance de vie puis Epre l'énergie du prédateur)
             cpt -= 1
     affiche_grille(config)
 
 
 # Retourne une case adjacente aléatoire selon la condition demandée
 def direction(x, y, n, e):
-    """Retourne une case adjacente aléatoire. n = 0 ou "Proie" ou "Prédateur" et e = "Déplacement" (= chasse pour les prédateurs) ou "Reproduction"."""
+    """Retourne une case adjacente aléatoire. n = 0 ou "Proie" ou "Predateur" et e = "Déplacement" (= chasse pour les prédateurs) ou "Reproduction"."""
     global pas_de_proie
     case_1 = case_2 = case_3 = case_4 = case_5 = case_6 = case_7 = case_8 = False # Création des variables pour chaque case (False = case indisponible, True = case disponible)
+    pas_de_proie = False # Réinitialisation de la variable pour la chasse des prédateurs
 
     if e == "Déplacement": # Si on cherche une case pour un déplacement/chasse
         # Vérifier pour chaque case (8 directions) que ce n'est pas une liste et que c'est égal à n (n = 0)
-        if type(config[x][y]) == list and config[x][y][0] == "Proie" or config[x][y][0] == "Prédateur" and n == 0:
+        if config[x][y][0] == "Proie" or (config[x][y][0] == "Predateur" and n == 0):
             if not type(config[x-1][y-1]) == list and config[x-1][y-1] == 0:
                 case_1 = True # Case 1 : en haut à gauche
             if not type(config[x-1][y-1]) == list and config[x-1][y] == 0:
@@ -165,7 +164,7 @@ def direction(x, y, n, e):
             if not type(config[x+1][y+1]) == list and config[x+1][y+1] == 0:
                 case_8 = True # Case 8 : en bas à droite
 
-        if type(config[x][y]) == list and config[x][y][0] == "Prédateur" and n != 0: # Si c'est un prédateur
+        elif config[x][y][0] == "Predateur" and n != 0: # Si c'est un prédateur
             if type(config[x-1][y-1]) == list and config[x-1][y-1][0] == "Proie": # Vérifier dans chaque direction s'il y a une proie
                 case_1 = True
             if type(config[x-1][y]) == list and config[x-1][y][0] == "Proie":
@@ -278,7 +277,7 @@ def direction(x, y, n, e):
 def vie_energie():
     """Retire 1 tour d'espérance de vie à tous les animaux, retire 1 d'énergie à tous les prédateurs et ajoute 1 d'énergie à toutes les proies."""
     global config
-    for x in range(1, N + 1): # Pour chaque abscisse (ex : [0, 0, ["Proie", 5, 3], ["Proie", 2, 3], 0, ["Prédateur", 15, 12], 0])
+    for x in range(1, N + 1): # Pour chaque abscisse (ex : [0, 0, ["Proie", 5, 3], ["Proie", 2, 3], 0, ["Predateur", 15, 12], 0])
         for y in range(1, N + 1): # Pour chaque ordonnée (ex : ["Proie", 5, 3])
             # Espérance de vie des animaux
             if type(config[x][y]) == list: # Seulement si c'est une liste (donc un animal)
@@ -291,9 +290,9 @@ def vie_energie():
                 config[x][y][2] += 1 # Ajouter 1 d'énergie
 
             # Énergie des prédateurs
-            if type(config[x][y]) == list and config[x][y][0] == "Prédateur": # Seulement si c'est un prédateur
-                config[x][y][2] -= 1 # Retirer 1 à l'énergie (ex : ["Prédateur", 14, 12] devient ["Prédateur", 14, 11])
-                if config[x][y][2] <= 0: # Si c'est par exemple ["Prédateur", 14, 0]
+            if type(config[x][y]) == list and config[x][y][0] == "Predateur": # Seulement si c'est un prédateur
+                config[x][y][2] -= 1 # Retirer 1 à l'énergie (ex : ["Predateur", 14, 12] devient ["Predateur", 14, 11])
+                if config[x][y][2] <= 0: # Si c'est par exemple ["Predateur", 14, 0]
                     config[x][y] = 0 # Remplacer par 0 (mort de l'animal)
 
 
@@ -535,23 +534,23 @@ def reproduction_predateurs():
     global config
     for x in range(1, N + 1):
         for y in range(1, N + 1):
-            if type(config[x][y]) == list and config[x][y][0] == "Prédateur" and config[x][y][2] >= Erepro and config[x][y].count("Reproduit") == 0: # Seulement si c'est un prédateur, qu'il ne s'est pas déjà reproduit pendant ce tour et que son niveau d'énergie est supérieur ou égal au niveau d'énergie Erepro nécessaire pour pouvoir se reproduire
+            if type(config[x][y]) == list and config[x][y][0] == "Predateur" and config[x][y][2] >= Erepro and config[x][y].count("Reproduit") == 0: # Seulement si c'est un prédateur, qu'il ne s'est pas déjà reproduit pendant ce tour et que son niveau d'énergie est supérieur ou égal au niveau d'énergie Erepro nécessaire pour pouvoir se reproduire
                 config[x][y].append("Reproduit") # Ajouter le terme "Reproduit" à la fin de la liste pour éviter qu'il se reproduise deux fois dans le même tour
                 r = True # Variable pour arrêter la boucle
                 while r: # Tant que r == True
                     x, y = rd.randint(1, N + 1), rd.randint(1, N + 1) # Génération de coordonnées aléatoires
                     if config[x][y] == 0: # Si la case à ces coordonnées est vide
-                        config[x][y] = ["Prédateur", Apre, Epre] # Ajouter un prédateur (Apre le nombre de tours d'espérance de vie et Epre l'énergie du prédateur)
+                        config[x][y] = ["Predateur", Apre, Epre] # Ajouter un prédateur (Apre le nombre de tours d'espérance de vie et Epre l'énergie du prédateur)
                         r = False # Variable pour arrêter la boucle
 
 
 # Déplacement et chasse des prédateurs
 def chasse():
     """Déplace les prédateurs sur une case adjacente, en priorité une case où se trouve une proie."""
-    global config
+    global config, pas_de_proie
     for x in range(1, N + 1):
         for y in range(1, N + 1):
-            if type(config[x][y]) == list and config[x][y][0] == "Prédateur" and config[x][y].count("Déplacé") == 0: # Seulement si c'est un prédateur et qu'il n'a pas déjà effectué de déplacement pendant ce tour
+            if type(config[x][y]) == list and config[x][y][0] == "Predateur" and config[x][y].count("Déplacé") == 0: # Seulement si c'est un prédateur et qu'il n'a pas déjà effectué de déplacement pendant ce tour
                 case = direction(x, y, "Proie", "Déplacement") # Retourner une case adjacente aléatoire où se situe une proie
                 if case == 0: # S'il n'y a pas de proie à côté
                     case = direction(x, y, 0, "Déplacement") # Cherche une case vide adjacente aléatoire
@@ -650,11 +649,11 @@ def compter_animaux():
                 nbre_animaux += 1 # On ajoute 1 au compteur d'animaux
                 if config[x][y][0] == "Proie": # Si c'est une proie
                     nbre_proies += 1 # On ajoute 1 au compteur de proies
-                if config[x][y][0] == "Prédateur": # Si c'est un prédateur
+                if config[x][y][0] == "Predateur": # Si c'est un prédateur
                     nbre_predateurs += 1 # On ajoute 1 au compteur de prédateurs
-    label_animaux.configure(text = ("Nombre d'animaux :", nbre_animaux)) # Actualise le texte du nombre d'animaux
-    label_proies.configure(text = ("Nombre de proies :", nbre_proies)) # Actualise le texte du nombre de proies
-    label_predateurs.configure(text = ("Nombre de prédateurs :", nbre_predateurs)) # Actualise le texte du nombre de prédateurs
+    label_animaux.configure(text = ("Nombre d'animaux : " + str(nbre_animaux))) # Actualise le texte du nombre d'animaux
+    label_proies.configure(text = ("Nombre de proies : " + str(nbre_proies))) # Actualise le texte du nombre de proies
+    label_predateurs.configure(text = ("Nombre de prédateurs : " + str(nbre_predateurs))) # Actualise le texte du nombre de prédateurs
 
 
 # Tour suivant
@@ -665,8 +664,8 @@ def tour_suivant():
     vie_energie() # Modification de l'espérance de vie et de l'énergie des animaux
     reproduction_proies() # Reproduction des proies
     reproduction_predateurs() # Reproduction des prédateurs
-    deplacement_proies() # Déplacement des proies
     chasse() # Déplacement et chasse des prédateurs
+    deplacement_proies() # Déplacement des proies
 
     # Boucle pour supprimer les termes "Reproduit" et "Déplacé" à la fin de chaque liste une fois que tous les déplacements/reproductions de ce tour ont été effectués
     for x in range(1, N + 1):
@@ -792,8 +791,8 @@ def charger():
         elif animal: # Si la ligne est dans la liste d'un animal
             if ligne == "Proie\n": # Si la ligne est "Proie"
                 config[x][y].append("Proie") # On ajoute "Proie" dans la liste de l'animal
-            elif ligne == "Prédateur\n":
-                config[x][y].append("Prédateur")
+            elif ligne == "Predateur\n":
+                config[x][y].append("Predateur")
             elif ligne == "Reproduit\n":
                 config[x][y].append("Reproduit")
             elif ligne == "Déplacé\n":
