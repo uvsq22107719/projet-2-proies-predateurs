@@ -25,7 +25,8 @@ HAUTEUR_CASE = LARGEUR_CASE # Hauteur des cases
 CHRONO = 500 # Temps en millisecondes entre chaque tour
 
 MIAM = 5 # Niveau d'énergie gagné lorsqu'un prédateur mange une proie
-FLAIR = 5 # Nombre maximal de cases pour qu'un prédateur peut sentir un proie
+FLAIR_PRE = 5 # Nombre maximal de cases pour qu'un prédateur puisse sentir une proie et la pourchasser
+FLAIR_PRO = 2 # Nombre maximal de cases pour qu'une proie puisse sentir un prédateur et fuir
 
 
 
@@ -35,7 +36,7 @@ tour = 0 # Numéro du tour
 arret = True # Variable pour arrêter le passage des tours
 var_chrono = 0 # Variable pour le compte à rebours entre chaque tour
 
-Npro = 50 # Nombre initial de proies (Npro proies apparaissent au début)
+Npro = 70 # Nombre initial de proies (Npro proies apparaissent au début)
 Apro = 10 # Espérance de vie des proies en nombre de tours
 Epro = 2 # Énergie des proies (augmente de 1 par tour avec Epro en plafond. Une énergie maximale (égale à Epro) est nécessaire pour qu'une proie puisse se reproduire. Epro revient à 0 à chaque reproduction.)
 
@@ -154,10 +155,38 @@ def direction(x, y, n, e):
                 case_7 = True # Case 7 : à droite
             if not type(config[x+1][y+1]) == list and config[x+1][y+1] == 0:
                 case_8 = True # Case 8 : en bas à droite
+            # FLAIR (Proie)
+            if config[x][y][0] == "Proie":
+                for i in range(1, (FLAIR_PRO + 1)):
+                    for j in range(1, (FLAIR_PRO + 1)):
+                        if x - i > 0 and y - j > 0: # Pour éviter que ça cherche des listes qui n'existent pas (et donc que ça fasse une erreur)
+                            if type(config[x-i][y-j]) == list and config[x-i][y-j][0] == "Predateur": # S'il y a un prédateur pas loin
+                                case_1 = case_2 = case_4 = False # Les cases 1, 2 et 4 sont indisponibles car un prédateur est dans cette direction
+                        if x - i > 0:
+                            if type(config[x-i][y]) == list and config[x-i][y][0] == "Predateur":
+                                case_1 = case_2 = case_3 = False
+                        if x - i > 0 and y + j < N:
+                            if type(config[x-i][y+j]) == list and config[x-i][y+j][0] == "Predateur":
+                                case_2 = case_3 = case_5 = False
+                        if y - j > 0:
+                            if type(config[x][y-j]) == list and config[x][y-j][0] == "Predateur":
+                                case_1 = case_4 = case_6 = False
+                        if y + j < N:
+                            if type(config[x][y+j]) == list and config[x][y+j][0] == "Predateur":
+                                case_3 = case_5 = case_7 = False
+                        if x + i < N and y - j > 0:
+                            if type(config[x+i][y-j]) == list and config[x+i][y-j][0] == "Predateur":
+                                case_4 = case_6 = case_7 = False
+                        if x + i < N:
+                            if type(config[x+i][y]) == list and config[x+i][y][0] == "Predateur":
+                                case_6 = case_7 = case_8 = False
+                        if x + i < N and y + j < N:
+                            if type(config[x+i][y+j]) == list and config[x+i][y+j][0] == "Predateur":
+                                case_5 = case_7 = case_8 = False
 
-        elif config[x][y][0] == "Predateur" and n != 0: # Si c'est un prédateur
+        elif config[x][y][0] == "Predateur" and n != 0: # Si c'est un prédateur et que l'on ne cherche pas une case vide
             if type(config[x-1][y-1]) == list and config[x-1][y-1][0] == "Proie": # Vérifier dans chaque direction s'il y a une proie
-                case_1 = True
+                case_1 = True # La case 1 est disponible
             if type(config[x-1][y]) == list and config[x-1][y][0] == "Proie":
                 case_2 = True
             if type(config[x-1][y+1]) == list and config[x-1][y+1][0] == "Proie":
@@ -173,10 +202,11 @@ def direction(x, y, n, e):
             if type(config[x+1][y+1]) == list and config[x+1][y+1][0] == "Proie":
                 case_8 = True
             # S'il n'y a aucune proie à côté du prédateur
+            # FLAIR (Prédateur)
             if case_1 == case_2 == case_3 == case_4 == case_5 == case_6 == case_7 == case_8 == False:
-                pas_de_proie = True
-                for i in range(1, (FLAIR + 1)):
-                    for j in range(1, (FLAIR + 1)):
+                pas_de_proie = True # Variable pour indiquer que l'on ne va pas se déplacer sur la case d'une proie
+                for i in range(1, (FLAIR_PRE + 1)):
+                    for j in range(1, (FLAIR_PRE + 1)):
                         if x - i > 0 and y - j > 0: # Pour éviter que ça cherche des listes qui n'existent pas (et donc que ça fasse une erreur)
                             if type(config[x-i][y-j]) == list and config[x-i][y-j][0] == "Proie": # S'il y a une proie pas loin
                                 if not type(config[x-1][y-1]) == list and config[x-1][y-1] == 0: # Et qu'il y a une case de libre dans cette direction
