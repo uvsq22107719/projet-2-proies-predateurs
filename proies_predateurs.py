@@ -7,15 +7,6 @@
 # https://github.com/uvsq22107719/projet-2-proies-predateurs #
 ##############################################################
 
-
-###### Problème important restant : ############################################################
-#   Après le chargement d'une matrice sauvegardée, appuyer sur le bouton "Commencer" reprend
-# la matrice précédente. Peut-être un problème au niveau de la commande .after() qui ne s'annule
-# pas vraiment avec .after_cancel() ?
-################################################################################################
-
-
-
 ### Import des librairies
 
 import tkinter as tk
@@ -681,7 +672,7 @@ def tour_suivant():
     compter_animaux() # Compter le nombre d'animaux
     if nbre_animaux == 0: # S'il n'y a plus d'animaux
         arret = True # Arrêter la simulation
-        bouton_start.configure(text = "Commencer") # Changer le texte du bouton en "Arrêter"
+        bouton_start.configure(text = "Reprendre") # Changer le texte du bouton start en "Reprendre"
     if not arret: # Si la simulation n'est pas arrêtée
         passage_tours() # Continuer à passer les tours
     if sauv_validee: # Si le message de validation de la sauvegarde est affiché
@@ -700,7 +691,7 @@ def commencer():
         passage_tours() # Faire passer les tours
     elif not arret: # Si arret == False (simulation en cours)
         arret = True
-        bouton_start.configure(text = "Commencer") # Changer le texte du bouton en "Arrêter"
+        bouton_start.configure(text = "Reprendre") # Changer le texte du bouton start en "Reprendre"
         canvas.after_cancel(var_chrono) # Arrêter le passage des tours
 
 
@@ -718,9 +709,9 @@ def reinitialiser():
     init_grille() # Création de la grille de départ
     init_proies() # Ajout de Npro proies à des coordonnées aléatoires
     init_prédateurs() # Ajout de Npre prédateurs à des coordonnées aléatoires
+    bouton_start.configure(text = "Commencer") # Changer le texte du bouton start en "Commencer"
     if not arret: # Si la simulation est en cours
         arret = True # Arrêter la simulation
-        bouton_start.configure(text = "Commencer") # Changer le texte du bouton start en "Arrêter"
         canvas.after_cancel(var_chrono) # Arrêter le passage des tours
     tour = 0 # Réinitialise le numéro du tour
     label_tours.configure(text = ("Tour", tour)) # Actualise le texte du numéro de tour
@@ -756,7 +747,7 @@ def sauvegarder():
 # Charger la matrice sauvegardée
 def charger():
     """Charge la configuration sauvegardée dans le fichier "sauvegarde"."""
-    global arret, tour
+    global arret, tour, config
     # Réinitialisation de la matrice
     config = [[0 for x in range(N + 2)] for y in range(N + 2)] # Création de la matrice de taille N + 2 pour les bords
     config[0] = ["#" for x in range(N + 2)] # Ajout de "#" sur le bord gauche (invisible)
@@ -803,9 +794,9 @@ def charger():
     affiche_grille(config) # Actualise la grille
     label_tours.configure(text = ("Tour", tour)) # Actualise le texte du numéro de tour récupéré dans le fichier
     compter_animaux() # Compter le nombre d'animaux
+    bouton_start.configure(text = "Commencer") # Changer le texte du bouton start en "Commencer"
     if not arret: # Si la simulation est en cours
         arret = True # Arrêter la simulation
-        bouton_start.configure(text = "Commencer") # Changer le texte du bouton start en "Arrêter"
         canvas.after_cancel(var_chrono) # Arrêter le passage des tours
 
 
