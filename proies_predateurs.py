@@ -90,7 +90,7 @@ def init_grille():
         for j in range(1, N + 1):
             y = (j - 1) * HAUTEUR_CASE
             col = "green" # Couleur du fond
-            carre = canvas.create_rectangle(x, y, x + LARGEUR_CASE, y + HAUTEUR_CASE, fill = col, outline = "grey") # outline = couleur du contour des carrés
+            carre = canvas.create_rectangle(x, y, x + LARGEUR_CASE, y + HAUTEUR_CASE, fill = col, outline = "green") # outline = couleur du contour des carrés
             grille[i][j] = carre
 
 
@@ -400,7 +400,7 @@ def reproduction_proies():
                     config[x-1][y][2] -= 3
                     case = direction(x, y, 0, "Déplacement")
                     if case == 0:
-                        pass
+                        break
                     elif case == 1:
                         config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 3:
@@ -422,7 +422,7 @@ def reproduction_proies():
                     config[x-1][y+1][2] -= 3
                     case = direction(x, y, 0, "Déplacement")
                     if case == 0:
-                        pass
+                        break
                     elif case == 1:
                         config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 2:
@@ -444,7 +444,7 @@ def reproduction_proies():
                     config[x][y-1][2] -= 3
                     case = direction(x, y, 0, "Déplacement")
                     if case == 0:
-                        pass
+                        break
                     elif case == 1:
                         config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 2:
@@ -466,7 +466,7 @@ def reproduction_proies():
                     config[x][y+1][2] -= 3
                     case = direction(x, y, 0, "Déplacement")
                     if case == 0:
-                        pass
+                        break
                     elif case == 1:
                         config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 2:
@@ -488,7 +488,7 @@ def reproduction_proies():
                     config[x+1][y-1][2] -= 3
                     case = direction(x, y, 0, "Déplacement")
                     if case == 0:
-                        pass
+                        break
                     elif case == 1:
                         config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 2:
@@ -510,7 +510,7 @@ def reproduction_proies():
                     config[x+1][y][2] -= 3
                     case = direction(x, y, 0, "Déplacement")
                     if case == 0:
-                        pass
+                        break
                     elif case == 1:
                         config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 2:
@@ -532,7 +532,7 @@ def reproduction_proies():
                     config[x+1][y+1][2] -= 3
                     case = direction(x, y, 0, "Déplacement")
                     if case == 0:
-                        pass
+                        break
                     elif case == 1:
                         config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
                     elif case == 2:
@@ -568,7 +568,7 @@ def reproduction_predateurs():
 # Déplacement et chasse des prédateurs
 def chasse():
     """Déplace les prédateurs sur une case adjacente, en priorité une case où se trouve une proie."""
-    global config, pas_de_proie
+    global config
     for x in range(1, N + 1):
         for y in range(1, N + 1):
             if type(config[x][y]) == list and config[x][y][0] == "Predateur" and config[x][y].count("Déplacé") == 0: # Seulement si c'est un prédateur et qu'il n'a pas déjà effectué de déplacement pendant ce tour
@@ -680,7 +680,7 @@ def compter_animaux():
 # Tour suivant
 def tour_suivant():
     """Fait passer les tours (modification de l'âge, de l'énergie et déplacement et reproduction)."""
-    global config, tour, sauv_validee, nbre_animaux, arret
+    global tour, sauv_validee, arret
 
     vie_energie() # Modification de l'espérance de vie et de l'énergie des animaux
     reproduction_proies() # Reproduction des proies
@@ -713,7 +713,7 @@ def tour_suivant():
 # Commencer/arrêter le passage des tours
 def commencer():
     """Démarre ou arrête le passage des tours."""
-    global arret, nbre_animaux
+    global arret
     compter_animaux() # Compter le nombre d'animaux
     if arret == True and nbre_animaux > 0: # Si la simulation est en pause et qu'il y a des animaux
         arret = False
