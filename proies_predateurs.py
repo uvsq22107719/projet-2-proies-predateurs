@@ -36,7 +36,7 @@ tour = 0 # Numéro du tour
 arret = True # Variable pour arrêter le passage des tours
 var_chrono = 0 # Variable pour le compte à rebours entre chaque tour
 
-Npro = 70 # Nombre initial de proies (Npro proies apparaissent au début)
+Npro = 50 # Nombre initial de proies (Npro proies apparaissent au début)
 Apro = 10 # Espérance de vie des proies en nombre de tours
 Epro = 2 # Énergie des proies (augmente de 1 par tour avec Epro en plafond. Une énergie maximale (égale à Epro) est nécessaire pour qu'une proie puisse se reproduire. Epro revient à 0 à chaque reproduction.)
 
@@ -46,8 +46,6 @@ Epre = 10 # Énergie des prédateurs (baisse de 1 par tour, s'il elle atteint z�
 Erepro = 15 # Niveau d'énergie nécessaire pour qu'un prédateur puisse se reproduire
 
 sauv_validee = False # Variable pour afficher si la matrice actuelle est sauvegardée
-
-pas_de_proie = False # Variable pour le déplacement des prédateurs
 
 
 
@@ -85,13 +83,13 @@ def init_grille():
         config[x][0] = "#"
         config[x][-1] = "#"
 
-    for i in range(1, N + 1):
-        x = (i - 1) * LARGEUR_CASE
-        for j in range(1, N + 1):
-            y = (j - 1) * HAUTEUR_CASE
+    for x in range(1, N + 1):
+        i = (x - 1) * LARGEUR_CASE
+        for y in range(1, N + 1):
+            j = (y - 1) * HAUTEUR_CASE
             col = "green" # Couleur du fond
-            carre = canvas.create_rectangle(x, y, x + LARGEUR_CASE, y + HAUTEUR_CASE, fill = col, outline = "green") # outline = couleur du contour des carrés
-            grille[i][j] = carre
+            carre = canvas.create_rectangle(i, j, i + LARGEUR_CASE, j + HAUTEUR_CASE, fill = col, outline = "green") # outline = couleur du contour des carrés
+            grille[x][y] = carre
 
 
 # Affichage de la grille
@@ -129,16 +127,40 @@ def init_prédateurs():
     affiche_grille(config)
 
 
+# Récupérer les coordonnées de la case
+def coordonnees_case(x, y, case):
+    """Récupère les nouvelles coordonnées i et j de la case à partir du numéro de cette case et des coordonnées x et y de la case de départ."""
+    global i, j
+    if case == 1: # En haut à gauche
+        i, j = x - 1, y - 1
+    elif case == 2: # À gauche
+        i, j = x - 1, y
+    elif case == 3: # En bas à gauche
+        i, j = x - 1, y + 1
+    elif case == 4: # En haut
+        i, j = x, y - 1
+    elif case == 5: # En bas
+        i, j = x, y + 1
+    elif case == 6: # En haut à droite
+        i, j = x + 1, y - 1
+    elif case == 7: # À droite
+        i, j = x + 1, y
+    elif case == 8: # En bas à droite
+        i, j = x + 1, y + 1
+
+
 # Retourne une case adjacente aléatoire selon la condition demandée
-def direction(x, y, n, e):
-    """Retourne une case adjacente aléatoire. n = 0 ou "Proie" ou "Predateur" et e = "Déplacement" (= chasse pour les prédateurs) ou "Reproduction"."""
+def direction(x, y, recherche, action):
+    """Retourne une case adjacente aléatoire. recherche = 0 ou "Proie" ou "Predateur" et action = "Déplacement" (= chasse pour les prédateurs) ou "Reproduction"."""
     global pas_de_proie
     case_1 = case_2 = case_3 = case_4 = case_5 = case_6 = case_7 = case_8 = False # Création des variables pour chaque case (False = case indisponible, True = case disponible)
     pas_de_proie = False # Réinitialisation de la variable pour la chasse des prédateurs
 
-    if e == "Déplacement": # Si on cherche une case pour un déplacement/chasse
-        # Vérifier pour chaque case (8 directions) que ce n'est pas une liste et que c'est égal à n (n = 0)
-        if config[x][y][0] == "Proie" or (config[x][y][0] == "Predateur" and n == 0):
+    # Pour le déplacement (ou chasse)
+    if action == "Déplacement":
+        # Si on cherche une case vide
+        if recherche == 0:
+            # Vérifier pour chaque case (8 directions) si elle est vide
             if not type(config[x-1][y-1]) == list and config[x-1][y-1] == 0:
                 case_1 = True # Case 1 : en haut à gauche
             if not type(config[x-1][y-1]) == list and config[x-1][y] == 0:
@@ -155,7 +177,7 @@ def direction(x, y, n, e):
                 case_7 = True # Case 7 : à droite
             if not type(config[x+1][y+1]) == list and config[x+1][y+1] == 0:
                 case_8 = True # Case 8 : en bas à droite
-            # FLAIR (Proie)
+            # Flair des proies
             if config[x][y][0] == "Proie":
                 for i in range(1, (FLAIR_PRO + 1)):
                     for j in range(1, (FLAIR_PRO + 1)):
@@ -184,7 +206,8 @@ def direction(x, y, n, e):
                             if type(config[x+i][y+j]) == list and config[x+i][y+j][0] == "Predateur":
                                 case_5 = case_7 = case_8 = False
 
-        elif config[x][y][0] == "Predateur" and n != 0: # Si c'est un prédateur et que l'on ne cherche pas une case vide
+        # Chasse des prédateurs
+        elif recherche == "Proie": # Si on cherche une proie
             if type(config[x-1][y-1]) == list and config[x-1][y-1][0] == "Proie": # Vérifier dans chaque direction s'il y a une proie
                 case_1 = True # La case 1 est disponible
             if type(config[x-1][y]) == list and config[x-1][y][0] == "Proie":
@@ -202,7 +225,7 @@ def direction(x, y, n, e):
             if type(config[x+1][y+1]) == list and config[x+1][y+1][0] == "Proie":
                 case_8 = True
             # S'il n'y a aucune proie à côté du prédateur
-            # FLAIR (Prédateur)
+            # Flair des prédateurs
             if case_1 == case_2 == case_3 == case_4 == case_5 == case_6 == case_7 == case_8 == False:
                 pas_de_proie = True # Variable pour indiquer que l'on ne va pas se déplacer sur la case d'une proie
                 for i in range(1, (FLAIR_PRE + 1)):
@@ -240,7 +263,8 @@ def direction(x, y, n, e):
                                 if not type(config[x+1][y+1]) == list and config[x+1][y+1] == 0:
                                     case_8 = True
 
-    if e == "Reproduction": # Si on cherche une case pour une reproduction
+    # Pour la reproduction des proies
+    if action == "Reproduction":
         # Vérifier pour chaque case (8 directions) que c'est une proie, que celle-ci a une énergie supérieure où égale à l'énergie maximale et qu'elle ne s'est pas déjà reproduite pendant ce tour
         if type(config[x-1][y-1]) == list and config[x-1][y-1][0] == "Proie" and config[x-1][y-1][2] >= Epro and config[x-1][y-1].count("Reproduit") == 0:
             case_1 = True
@@ -327,38 +351,11 @@ def deplacement_proies():
                 case = direction(x, y, 0, "Déplacement") # Obtenir une case aléatoire pour un déplacement
                 if case == 0: # Si aucune case disponible
                     break # Annuler la boucle
-                elif case == 1: # Si la case 1 est disponible
-                    config[x-1][y-1] = config[x][y][:] # Copie de la liste sur la nouvelle position
+                else:
+                    coordonnees_case(x, y, case) # Récupérer les coordonnées i et j de la case selon son numéro
+                    config[i][j] = config[x][y][:] # Copie de la liste sur la nouvelle position
                     config[x][y] = 0 # Suppression de la liste sur l'ancienne position
-                    config[x-1][y-1].append("Déplacé") # Ajout du terme "Déplacé" à la fin de la liste pour éviter de déplacer la même proie plusieurs fois dans le même tour
-                elif case == 2:
-                    config[x-1][y] = config[x][y][:]
-                    config[x][y] = 0
-                    config[x-1][y].append("Déplacé")
-                elif case == 3:
-                    config[x-1][y+1] = config[x][y][:]
-                    config[x][y] = 0
-                    config[x-1][y+1].append("Déplacé")
-                elif case == 4:
-                    config[x][y-1] = config[x][y][:]
-                    config[x][y] = 0
-                    config[x][y-1].append("Déplacé")
-                elif case == 5:
-                    config[x][y+1] = config[x][y][:]
-                    config[x][y] = 0
-                    config[x][y+1].append("Déplacé")
-                elif case == 6:
-                    config[x+1][y-1] = config[x][y][:]
-                    config[x][y] = 0
-                    config[x+1][y-1].append("Déplacé")
-                elif case == 7:
-                    config[x+1][y] = config[x][y][:]
-                    config[x][y] = 0
-                    config[x+1][y].append("Déplacé")
-                elif case == 8:
-                    config[x+1][y+1] = config[x][y][:]
-                    config[x][y] = 0
-                    config[x+1][y+1].append("Déplacé")
+                    config[i][j].append("Déplacé") # Ajout du terme "Déplacé" à la fin de la liste pour éviter de déplacer la même proie plusieurs fois dans le même tour
 
 
 # Reproduction des proies
@@ -371,183 +368,18 @@ def reproduction_proies():
                 case = direction(x, y, "Proie", "Reproduction") # Obtenir une case aléatoire ou se trouve une proie pour une reproduction
                 if case == 0: # Si aucune case disponible
                     break # Annuler la boucle
-                elif case == 1: # Si la case 1 est disponible
+                else:
+                    coordonnees_case(x, y, case) # Récupérer les coordonnées i et j de la case selon son numéro
                     config[x][y].append("Reproduit") # Ajout du terme "Reproduit" à la fin de la liste pour éviter que les proies se reproduisent plusieurs fois par tour
                     config[x][y][2] = 0 # Réinitialisation de l'énergie
-                    config[x-1][y-1].append("Reproduit")
-                    config[x-1][y-1][2] = 0 # Réinitialisation de l'énergie
+                    config[i][j].append("Reproduit")
+                    config[i][j][2] = 0 # Réinitialisation de l'énergie
                     case = direction(x, y, 0, "Déplacement")
                     if case == 0: # Si aucune case disponible
                         break # Annuler la boucle
-                    elif case == 2: # Si la case 2 est disponible
-                        config[x-1][y] = ["Proie", Apro, (Epro - 1)] # Ajouter une proies avec une espérance de vie de Apro tours et une énergie égale à (Epro - 1), pour ne pas que la nouvelle proie puisse se reproduire immédiatement
-                    elif case == 3:
-                        config[x-1][y+1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 4:
-                        config[x][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 5:
-                        config[x][y+1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 6:
-                        config[x+1][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 7:
-                        config[x+1][y] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 8:
-                        config[x+1][y+1] = ["Proie", Apro, (Epro - 1)]
-                elif case == 2:
-                    config[x][y].append("Reproduit")
-                    config[x][y][2] -= 3
-                    config[x-1][y].append("Reproduit")
-                    config[x-1][y][2] -= 3
-                    case = direction(x, y, 0, "Déplacement")
-                    if case == 0:
-                        break
-                    elif case == 1:
-                        config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 3:
-                        config[x-1][y+1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 4:
-                        config[x][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 5:
-                        config[x][y+1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 6:
-                        config[x+1][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 7:
-                        config[x+1][y] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 8:
-                        config[x+1][y+1] = ["Proie", Apro, (Epro - 1)]
-                elif case == 3:
-                    config[x][y].append("Reproduit")
-                    config[x][y][2] -= 3
-                    config[x-1][y+1].append("Reproduit")
-                    config[x-1][y+1][2] -= 3
-                    case = direction(x, y, 0, "Déplacement")
-                    if case == 0:
-                        break
-                    elif case == 1:
-                        config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 2:
-                        config[x-1][y] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 4:
-                        config[x][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 5:
-                        config[x][y+1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 6:
-                        config[x+1][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 7:
-                        config[x+1][y] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 8:
-                        config[x+1][y+1] = ["Proie", Apro, (Epro - 1)]
-                elif case == 4:
-                    config[x][y].append("Reproduit")
-                    config[x][y][2] -= 3
-                    config[x][y-1].append("Reproduit")
-                    config[x][y-1][2] -= 3
-                    case = direction(x, y, 0, "Déplacement")
-                    if case == 0:
-                        break
-                    elif case == 1:
-                        config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 2:
-                        config[x-1][y] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 3:
-                        config[x-1][y+1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 5:
-                        config[x][y+1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 6:
-                        config[x+1][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 7:
-                        config[x+1][y] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 8:
-                        config[x+1][y+1] = ["Proie", Apro, (Epro - 1)]
-                elif case == 5:
-                    config[x][y].append("Reproduit")
-                    config[x][y][2] -= 3
-                    config[x][y+1].append("Reproduit")
-                    config[x][y+1][2] -= 3
-                    case = direction(x, y, 0, "Déplacement")
-                    if case == 0:
-                        break
-                    elif case == 1:
-                        config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 2:
-                        config[x-1][y] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 3:
-                        config[x-1][y+1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 4:
-                        config[x][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 6:
-                        config[x+1][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 7:
-                        config[x+1][y] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 8:
-                        config[x+1][y+1] = ["Proie", Apro, (Epro - 1)]
-                elif case == 6:
-                    config[x][y].append("Reproduit")
-                    config[x][y][2] -= 3
-                    config[x+1][y-1].append("Reproduit")
-                    config[x+1][y-1][2] -= 3
-                    case = direction(x, y, 0, "Déplacement")
-                    if case == 0:
-                        break
-                    elif case == 1:
-                        config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 2:
-                        config[x-1][y] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 3:
-                        config[x-1][y+1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 4:
-                        config[x][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 5:
-                        config[x][y+1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 7:
-                        config[x+1][y] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 8:
-                        config[x+1][y+1] = ["Proie", Apro, (Epro - 1)]
-                elif case == 7:
-                    config[x][y].append("Reproduit")
-                    config[x][y][2] -= 3
-                    config[x+1][y].append("Reproduit")
-                    config[x+1][y][2] -= 3
-                    case = direction(x, y, 0, "Déplacement")
-                    if case == 0:
-                        break
-                    elif case == 1:
-                        config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 2:
-                        config[x-1][y] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 3:
-                        config[x-1][y+1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 4:
-                        config[x][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 5:
-                        config[x][y+1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 6:
-                        config[x+1][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 8:
-                        config[x+1][y+1] = ["Proie", Apro, (Epro - 1)]
-                elif case == 8:
-                    config[x][y].append("Reproduit")
-                    config[x][y][2] -= 3
-                    config[x+1][y+1].append("Reproduit")
-                    config[x+1][y+1][2] -= 3
-                    case = direction(x, y, 0, "Déplacement")
-                    if case == 0:
-                        break
-                    elif case == 1:
-                        config[x-1][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 2:
-                        config[x-1][y] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 3:
-                        config[x-1][y+1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 4:
-                        config[x][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 5:
-                        config[x][y+1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 6:
-                        config[x+1][y-1] = ["Proie", Apro, (Epro - 1)]
-                    elif case == 7:
-                        config[x+1][y] = ["Proie", Apro, (Epro - 1)]
-
+                    else: # Si la case 2 est disponible
+                        coordonnees_case(x, y, case) # Récupérer les coordonnées i et j de la case selon son numéro
+                        config[i][j] = ["Proie", Apro, (Epro - 1)]
 
 # Reproduction des prédateurs
 def reproduction_predateurs():
@@ -577,86 +409,18 @@ def chasse():
                     case = direction(x, y, 0, "Déplacement") # Cherche une case vide adjacente aléatoire
                     if case == 0: # S'il n'y a pas de case vide non plus
                         break # Annuler la boucle
-                    elif case == 1: # Si la case 1 est vide
-                        config[x-1][y-1] = config[x][y][:] # Copie de la liste sur la nouvelle position
+                    else:
+                        coordonnees_case(x, y, case) # Récupérer les coordonnées i et j de la case selon son numéro
+                        config[i][j] = config[x][y][:] # Copie de la liste sur la nouvelle position
                         config[x][y] = 0 # Suppression de la liste sur l'ancienne position
-                        config[x-1][y-1].append("Déplacé") # Ajout du terme "Déplacé" à la fin de la liste pour éviter de déplacer le même animal 2 fois dans le même tour
-                    elif case == 2:
-                        config[x-1][y] = config[x][y][:]
-                        config[x][y] = 0
-                        config[x-1][y].append("Déplacé")
-                    elif case == 3:
-                        config[x-1][y+1] = config[x][y][:]
-                        config[x][y] = 0
-                        config[x-1][y+1].append("Déplacé")
-                    elif case == 4:
-                        config[x][y-1] = config[x][y][:]
-                        config[x][y] = 0
-                        config[x][y-1].append("Déplacé")
-                    elif case == 5:
-                        config[x][y+1] = config[x][y][:]
-                        config[x][y] = 0
-                        config[x][y+1].append("Déplacé")
-                    elif case == 6:
-                        config[x+1][y-1] = config[x][y][:]
-                        config[x][y] = 0
-                        config[x+1][y-1].append("Déplacé")
-                    elif case == 7:
-                        config[x+1][y] = config[x][y][:]
-                        config[x][y] = 0
-                        config[x+1][y].append("Déplacé")
-                    elif case == 8:
-                        config[x+1][y+1] = config[x][y][:]
-                        config[x][y] = 0
-                        config[x+1][y+1].append("Déplacé")
-                elif case == 1: # Si la case 1 a une proie
-                    config[x-1][y-1] = config[x][y][:] # Copie de la liste sur la nouvelle position
+                        config[i][j].append("Déplacé") # Ajout du terme "Déplacé" à la fin de la liste pour éviter de déplacer le même animal 2 fois dans le même tour
+                else: # Si la case 1 a une proie
+                    coordonnees_case(x, y, case) # Récupérer les coordonnées i et j de la case selon son numéro
+                    config[i][j] = config[x][y][:] # Copie de la liste sur la nouvelle position
                     config[x][y] = 0 # Suppression de la liste sur l'ancienne position
-                    config[x-1][y-1].append("Déplacé") # Ajout du terme "Déplacé" à la fin de la liste pour éviter de déplacer le même animal 2 fois de suite
+                    config[i][j].append("Déplacé") # Ajout du terme "Déplacé" à la fin de la liste pour éviter de déplacer le même animal 2 fois de suite
                     if not pas_de_proie: # Si le prédateur se déplace sur la case d'une proie
-                        config[x-1][y-1][2] += MIAM # Ajout de MIAM énergie à l'énergie du prédateur
-                elif case == 2:
-                    config[x-1][y] = config[x][y][:]
-                    config[x][y] = 0
-                    config[x-1][y].append("Déplacé")
-                    if not pas_de_proie:
-                        config[x-1][y][2] += MIAM
-                elif case == 3:
-                    config[x-1][y+1] = config[x][y][:]
-                    config[x][y] = 0
-                    config[x-1][y+1].append("Déplacé")
-                    if not pas_de_proie:
-                        config[x-1][y+1][2] += MIAM
-                elif case == 4:
-                    config[x][y-1] = config[x][y][:]
-                    config[x][y] = 0
-                    config[x][y-1].append("Déplacé")
-                    if not pas_de_proie:
-                        config[x][y-1][2] += MIAM
-                elif case == 5:
-                    config[x][y+1] = config[x][y][:]
-                    config[x][y] = 0
-                    config[x][y+1].append("Déplacé")
-                    if not pas_de_proie:
-                        config[x][y+1][2] += MIAM
-                elif case == 6:
-                    config[x+1][y-1] = config[x][y][:]
-                    config[x][y] = 0
-                    config[x+1][y-1].append("Déplacé")
-                    if not pas_de_proie:
-                        config[x+1][y-1][2] += MIAM
-                elif case == 7:
-                    config[x+1][y] = config[x][y][:]
-                    config[x][y] = 0
-                    config[x+1][y].append("Déplacé")
-                    if not pas_de_proie:
-                        config[x+1][y][2] += MIAM
-                elif case == 8:
-                    config[x+1][y+1] = config[x][y][:]
-                    config[x][y] = 0
-                    config[x+1][y+1].append("Déplacé")
-                    if not pas_de_proie:
-                        config[x+1][y+1][2] += MIAM
+                        config[i][j][2] += MIAM # Ajout de MIAM énergie à l'énergie du prédateur
 
 
 # Compter le nombre d'animaux
