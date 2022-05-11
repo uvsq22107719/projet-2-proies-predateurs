@@ -364,15 +364,13 @@ def reproduction_proies():
     global config
     for x in range(1, N + 1):
         for y in range(1, N + 1):
-            if type(config[x][y]) == list and config[x][y][0] == "Proie" and config[x][y][2] >= Epro and config[x][y].count("Reproduit") == 0: # Seulement si c'est une proie, qu'elle ne s'est pas déjà reproduite pendant ce tour et que son niveau d'énergie est maximal (égal à Epro)
+            if type(config[x][y]) == list and config[x][y][0] == "Proie" and config[x][y][2] >= Epro: # Seulement si c'est une proie et que son niveau d'énergie est maximal (égal à Epro)
                 case = direction(x, y, "Proie", "Reproduction") # Obtenir une case aléatoire ou se trouve une proie pour une reproduction
                 if case == 0: # Si aucune case disponible
                     break # Annuler la boucle
                 else:
                     coordonnees_case(x, y, case) # Récupérer les coordonnées i et j de la case selon son numéro
-                    config[x][y].append("Reproduit") # Ajout du terme "Reproduit" à la fin de la liste pour éviter que les proies se reproduisent plusieurs fois par tour
                     config[x][y][2] = 0 # Réinitialisation de l'énergie
-                    config[i][j].append("Reproduit")
                     config[i][j][2] = 0 # Réinitialisation de l'énergie
                     case = direction(x, y, 0, "Déplacement")
                     if case == 0: # Si aucune case disponible
