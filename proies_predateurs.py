@@ -51,20 +51,6 @@ sauv_validee = False # Variable pour afficher si la matrice actuelle est sauvega
 
 ### Définitions des fonctions
 
-# Choix des couleurs
-def choix_couleur(n):
-    """Retourne une couleur à partir de l'entier n."""
-    if n == 0: # S'il n'y a rien
-        return "green" # Couleur du fond
-    else:
-        if n[0] == "Proie": # Si c'est une proie
-            return "yellow" # Couleur des proies
-        elif n[0] == "Predateur": # Si c'est un prédateur
-            return "red" # Couleur des prédateurs
-        else: # Si c'est autre chose
-            return "grey"
-
-
 # Création de la grille
 def init_grille():
     """Retourne une grille carrée vide de dimension N+2, les éléments de la configuration vont de 1 à N. Les indices 0 et N+1 sont les bords."""
@@ -92,15 +78,6 @@ def init_grille():
             grille[x][y] = carre
 
 
-# Affichage de la grille
-def affiche_grille(config):
-    """Affiche la configuration donnée."""
-    for x in range(1, N + 1): # Pour chaque abscisse
-        for y in range(1, N + 1): # Pour chaque ordonnée
-            col = choix_couleur(config[x][y]) # Choix de la couleur en fonction de l'élément
-            canvas.itemconfigure(grille[x][y], fill = col) # Changement de la couleur de la case en fonction de la couleur retournée
-
-
 # Initialise les proies
 def init_proies():
     """Ajoute Npro proies à des coordonnées aléatoires."""
@@ -125,6 +102,29 @@ def init_prédateurs():
             config[x][y] = ["Predateur", Apre, Epre] # Création d'une liste avec toutes les infos sur l'animal (ici c'est un prédateur avec Apre le nombre de tours d'espérance de vie puis Epre l'énergie du prédateur)
             cpt -= 1
     affiche_grille(config)
+
+
+# Affichage de la grille
+def affiche_grille(config):
+    """Affiche la configuration donnée."""
+    for x in range(1, N + 1): # Pour chaque abscisse
+        for y in range(1, N + 1): # Pour chaque ordonnée
+            col = choix_couleur(config[x][y]) # Choix de la couleur en fonction de l'élément
+            canvas.itemconfigure(grille[x][y], fill = col) # Changement de la couleur de la case en fonction de la couleur retournée
+
+
+# Choix des couleurs
+def choix_couleur(n):
+    """Retourne une couleur à partir de l'entier n."""
+    if n == 0: # S'il n'y a rien
+        return "green" # Couleur du fond
+    else:
+        if n[0] == "Proie": # Si c'est une proie
+            return "yellow" # Couleur des proies
+        elif n[0] == "Predateur": # Si c'est un prédateur
+            return "red" # Couleur des prédateurs
+        else: # Si c'est autre chose
+            return "grey"
 
 
 # Compter le nombre d'animaux
