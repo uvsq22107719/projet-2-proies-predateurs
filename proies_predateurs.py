@@ -458,7 +458,7 @@ def tour_suivant():
             if type(config[x][y]) == list and config[x][y].count("Déplacé") > 0: # Seulement si c'est une liste (donc un animal) et qu'elle contient le terme "Déplacé"
                 config[x][y].remove("Déplacé") # Supprimer le terme "Déplacé" de la liste
 
-    affiche_grille(config) # Actuale la grille
+    affiche_grille(config) # Actualise la grille
     tour += 1 # Ajout d'un tour au compteur
     label_tours.configure(text = ("Tour", tour)) # Actualise le texte du numéro de tour
     compter_animaux() # Compter le nombre d'animaux
