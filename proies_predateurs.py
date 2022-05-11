@@ -127,6 +127,24 @@ def init_prédateurs():
     affiche_grille(config)
 
 
+# Compter le nombre d'animaux
+def compter_animaux():
+    """Compte le nombre total d'animaux, le nombre de proies et le nombre de prédateurs."""
+    global nbre_animaux, nbre_proies, nbre_predateurs
+    nbre_animaux = nbre_proies = nbre_predateurs = 0
+    for x in range(1, N + 1):
+        for y in range(1, N + 1):
+            if type(config[x][y]) == list: # Si c'est une liste (donc un animal)
+                nbre_animaux += 1 # On ajoute 1 au compteur d'animaux
+                if config[x][y][0] == "Proie": # Si c'est une proie
+                    nbre_proies += 1 # On ajoute 1 au compteur de proies
+                if config[x][y][0] == "Predateur": # Si c'est un prédateur
+                    nbre_predateurs += 1 # On ajoute 1 au compteur de prédateurs
+    label_animaux.configure(text = ("Nombre d'animaux : " + str(nbre_animaux))) # Actualise le texte du nombre d'animaux
+    label_proies.configure(text = ("Nombre de proies : " + str(nbre_proies))) # Actualise le texte du nombre de proies
+    label_predateurs.configure(text = ("Nombre de prédateurs : " + str(nbre_predateurs))) # Actualise le texte du nombre de prédateurs
+
+
 # Commencer/arrêter le passage des tours
 def commencer():
     """Démarre ou arrête le passage des tours."""
@@ -475,24 +493,6 @@ def direction(x, y, recherche, action):
                 case = 8
                 d = False
     return case # Retourner la valeur de case (comprise entre 0 et 8 inclus)
-
-
-# Compter le nombre d'animaux
-def compter_animaux():
-    """Compte le nombre total d'animaux, le nombre de proies et le nombre de prédateurs."""
-    global nbre_animaux, nbre_proies, nbre_predateurs
-    nbre_animaux = nbre_proies = nbre_predateurs = 0
-    for x in range(1, N + 1):
-        for y in range(1, N + 1):
-            if type(config[x][y]) == list: # Si c'est une liste (donc un animal)
-                nbre_animaux += 1 # On ajoute 1 au compteur d'animaux
-                if config[x][y][0] == "Proie": # Si c'est une proie
-                    nbre_proies += 1 # On ajoute 1 au compteur de proies
-                if config[x][y][0] == "Predateur": # Si c'est un prédateur
-                    nbre_predateurs += 1 # On ajoute 1 au compteur de prédateurs
-    label_animaux.configure(text = ("Nombre d'animaux : " + str(nbre_animaux))) # Actualise le texte du nombre d'animaux
-    label_proies.configure(text = ("Nombre de proies : " + str(nbre_proies))) # Actualise le texte du nombre de proies
-    label_predateurs.configure(text = ("Nombre de prédateurs : " + str(nbre_predateurs))) # Actualise le texte du nombre de prédateurs
 
 
 # Réinitialiser la matrice
